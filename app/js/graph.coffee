@@ -29,7 +29,7 @@ restart = ->
     .attr("class", "node")
     .text("unnamed")
     .call(force.drag)
-  keyboardListener.node().focus()
+  fsm.focus()
   force.start()
 
 force.on "tick", ->
@@ -43,14 +43,22 @@ force.on "tick", ->
     .attr("x", (d) -> d.x)
     .attr("y", (d) -> d.y)
     .text((d) -> d.text)
+    .on "click", fsm.edit.bind(fsm)
 
 class KeyboardFsm
-  constructor: ->
+  constructor: (selection) ->
+    @selection = selection
     @state = @creating
+    @selection.on "keyup", => @keyup()
   keyup: ->
     key = String.fromCharCode(d3.event.keyCode)
     @state.call @, key
     restart()
+  focus: -> @selection.node().focus()
+  edit: (d) ->
+    @selection.node().value = d.text
+    @currentNode = d
+    @state = @labeling
   labeling: (key) ->
     if d3.event.keyCode is 13
       el = d3.event.target
@@ -67,10 +75,9 @@ class KeyboardFsm
       @currentNode.text = d3.event.target.value
       nodes.push(@currentNode)
       @state = @labeling
-fsm = new KeyboardFsm()
+fsm = new KeyboardFsm(keyboardListener)
 
-keyboardListener.on "keyup", -> fsm.keyup()
-d3.select('body').on "click", -> keyboardListener.node().focus()
-keyboardListener.node().focus()
+d3.select('body').on "click", fsm.focus.bind(fsm)
+fsm.focus()
 restart();
 
