@@ -1,0 +1,26 @@
+.hello {
+  background-color: #efefef;
+  border: 1px solid #dedede;
+}
+
+svg {
+  border: 1px solid #369;
+}
+
+
+.cursor {
+  fill: none;
+  stroke: brown;
+  pointer-events: none;
+}
+
+.node {
+  font-size: 12pt;
+  color: #444;
+}
+
+.link {
+  stroke: #999;
+}
+
+    
