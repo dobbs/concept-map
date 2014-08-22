@@ -16,7 +16,12 @@ svg {
 
 .node {
   font-size: 12pt;
+  font-weight: normal;
   color: #444;
+}
+
+.node:hover {
+  font-weight: bold;
 }
 
 .link {
