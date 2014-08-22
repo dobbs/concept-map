@@ -31,13 +31,22 @@ class KeyboardFsm
       nodes.push(@currentNode)
       @state = @labeling
 
+nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
+links = if localStorage.links then JSON.parse(localStorage.links) else []
+
+@saveGraph = ->
+  localStorage.nodes = JSON.stringify(nodes)
+  localStorage.links = JSON.stringify(links)
+
 force = d3.layout.force()
   .charge(-80)
   .linkDistance(25)
-  .size([w, h]);
+  .size([w, h])
+  .nodes(nodes)
+  .links(links)
 
-nodes = force.nodes()
-links = force.links()
+@nodes = nodes
+@links = links
 
 svg = d3.select("body").append("svg")
   .attr("width", w)
@@ -58,9 +67,9 @@ restart = ->
     .attr("class", "link")
   svg.selectAll("text.node")
     .data(nodes)
-    .enter().insert("text", "circle.cursor")
+    .enter().insert("text")
     .attr("class", "node")
-    .text("unnamed")
+    .text((d) -> d.text)
     .call(force.drag)
   fsm.focus()
   force.start()
