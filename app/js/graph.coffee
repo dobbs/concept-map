@@ -63,7 +63,7 @@ class KeyboardFsm
     @currentLink =
       source: @source
       target: @target
-      preview: true
+    links.push(@currentLink)
     @state = @choosingTarget
   choosingTarget: ->
     switch @keyCode
@@ -71,7 +71,7 @@ class KeyboardFsm
         @state = @cancelLinking
         return @state()
       when RETURN
-        @state = @labelingLink
+        @state = @beginLabelingLink
         return @state()
       when LEFTARROW, UPARROW
         @targetIndex -= 1
@@ -85,6 +85,19 @@ class KeyboardFsm
     @currentLink.target = @target
   cancelLinking: ->
     links.pop()
+    @state = @cleanupLinking
+    @state()
+  beginLabelingLink: ->
+    @el.value = ""
+    @state = @labelingLink
+  labelingLink: ->
+    switch @keyCode
+      when RETURN
+        @state = @cleanupLinking
+        @state()
+      else
+        @currentLink.label = @el.value
+  cleanupLinking: ->
     @source = undefined
     @target = undefined
     @targetIndex = undefined
@@ -100,7 +113,7 @@ links = if localStorage.links then JSON.parse(localStorage.links) else []
 
 force = d3.layout.force()
   .charge(-80)
-  .linkDistance(25)
+  .linkDistance(50)
   .size([w, h])
   .nodes(nodes)
   .links(links)
@@ -118,10 +131,20 @@ keyboardListener = d3.select("body").append("input")
 fsm = new KeyboardFsm(keyboardListener)
 
 restart = ->
-  svg.selectAll("line.link")
-    .data(links)
-    .enter().insert("line", "text.node")
+  link = svg.selectAll("g.link").data(links)
+    .enter()
+    .append("g")
     .attr("class", "link")
+  link.append("line")
+  link.append("text")
+    .attr("class", "annotation")
+    .text((d)->d.label)
+
+  svg.selectAll("g.link").selectAll("text.annotation").data(links)
+    .text((d)->d.label)
+
+  svg.selectAll("g.link").data(links).exit().remove()
+  
   svg.selectAll("text.node")
     .data(nodes)
     .enter().insert("text")
@@ -141,11 +164,16 @@ restart = ->
   force.start()
 
 force.on "tick", ->
-  svg.selectAll("line.link")
+  lines = svg.selectAll("g.link")
+  lines.selectAll("line")
     .attr("x1", (d) -> d.source.x)
     .attr("y1", (d) -> d.source.y)
     .attr("x2", (d) -> d.target.x)
     .attr("y2", (d) -> d.target.y)
+  lines.selectAll("text")
+    .attr("x", (d) -> d.source.x + (d.target.x - d.source.x) / 2 )
+    .attr("y", (d) -> d.source.y + (d.target.y - d.source.y) / 2 )
+    .style("fill", "#000")
 
   svg.selectAll("text.node")
     .attr("x", (d) -> d.x)
