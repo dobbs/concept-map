@@ -7,6 +7,7 @@ class KeyboardFsm
     @selection.on "keyup", => @keyup()
   keyup: ->
     key = String.fromCharCode(d3.event.keyCode)
+    console.log(d3.event.keyCode)
     @state.call @, key
     restart()
   focus: -> @selection.node().focus()
@@ -20,16 +21,26 @@ class KeyboardFsm
       el.setSelectionRange(0, el.value.length)
       @state = @creating
     else
-      @currentNode.text = d3.event.target.value
+      @currentNode.text = @selection.node().value
   creating: (key) ->
     if /\w/.test key
       @currentNode =
+        index: nodes.length
         x: Math.random() * h
         y: Math.random() * w
-        text: ""
-      @currentNode.text = d3.event.target.value
+        text: @selection.node().value
       nodes.push(@currentNode)
       @state = @labeling
+  linking: (key) ->
+    @source = @currentNode
+    @targetIndex ||= @currentNode.index
+    switch d3.event.keyCode
+      when 37, 38 #leftarrow, uparrow
+        @targetIndex -= 1
+      when 39, 40 #rightarrow, downarrow
+        @targetIndex += 1
+    @targetIndex = @targetIndex % nodes.length
+    @target = nodes[@targetIndex]
 
 nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
 links = if localStorage.links then JSON.parse(localStorage.links) else []
@@ -44,9 +55,6 @@ force = d3.layout.force()
   .size([w, h])
   .nodes(nodes)
   .links(links)
-
-@nodes = nodes
-@links = links
 
 svg = d3.select("body").append("svg")
   .attr("width", w)
@@ -69,6 +77,15 @@ restart = ->
     .data(nodes)
     .enter().insert("text")
     .attr("class", "node")
+    .style("fill", (d) ->
+      switch d
+        when fsm.source
+          "#d00"
+        when fsm.target
+          "#0d0"
+        else
+          "#000"
+    )
     .text((d) -> d.text)
     .call(force.drag)
   fsm.focus()
@@ -85,9 +102,21 @@ force.on "tick", ->
     .attr("x", (d) -> d.x)
     .attr("y", (d) -> d.y)
     .text((d) -> d.text)
+    .style("fill", (d) ->
+      switch d
+        when fsm.source
+          "#d00"
+        when fsm.target
+          "#0d0"
+        else
+          "#000"
+    )
     .on "click", fsm.edit.bind(fsm)
 
 d3.select('body').on "click", fsm.focus.bind(fsm)
 fsm.focus()
 restart();
 
+@nodes = nodes
+@links = links
+@fsm = fsm
