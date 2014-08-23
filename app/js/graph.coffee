@@ -1,47 +1,96 @@
 [w, h] = [400, 400]
 
+RETURN = 13
+LEFTARROW = 37
+UPARROW = 38
+RIGHTARROW = 39
+DOWNARROW = 40
+ESC = 27
+CONTROL = 17
+SHIFT = 16
+OPTION = 18
+COMMAND = 91
+
 class KeyboardFsm
   constructor: (selection) ->
     @selection = selection
     @state = @creating
     @selection.on "keyup", => @keyup()
   keyup: ->
-    key = String.fromCharCode(d3.event.keyCode)
-    console.log(d3.event.keyCode)
-    @state.call @, key
+    @keyCode = d3.event.keyCode
+    @key = String.fromCharCode(@keyCode)
+    @el = @selection.node()
+    @state()
     restart()
   focus: -> @selection.node().focus()
   edit: (d) ->
     @selection.node().value = d.text
     @currentNode = d
     @state = @labeling
-  labeling: (key) ->
-    if d3.event.keyCode is 13
-      el = d3.event.target
-      el.setSelectionRange(0, el.value.length)
-      @state = @creating
-    else
-      @currentNode.text = @selection.node().value
-  creating: (key) ->
-    if /\w/.test key
-      @currentNode =
-        index: nodes.length
-        x: Math.random() * h
-        y: Math.random() * w
-        text: @selection.node().value
-      nodes.push(@currentNode)
-      @state = @labeling
-  linking: (key) ->
+  beginLabeling: ->
+    @currentNode =
+      index: nodes.length
+      x: Math.random() * h
+      y: Math.random() * w
+      text: @selection.node().value
+    nodes.push(@currentNode)
+    @state = @labeling
+  labeling: ->
+    switch @keyCode
+      when ESC
+        @state = @beginLinking
+        @state()
+      when RETURN
+        @el.setSelectionRange(0, @el.value.length)
+        @state = @creating
+      else
+        @currentNode.text = @el.value
+  creating: ->
+    switch @keyCode
+      when ESC
+        @state = @beginLinking
+        @state()
+      else
+        if /\w/.test @key
+          @state = @beginLabeling
+          @state()
+  beginLinking: ->
+    if @currentNode is undefined
+      @currentNode = nodes[0]
     @source = @currentNode
-    @targetIndex ||= @currentNode.index
-    switch d3.event.keyCode
-      when 37, 38 #leftarrow, uparrow
+    @target = @currentNode
+    @targetIndex = @currentNode.index
+    @currentLink =
+      source: @source
+      target: @target
+      preview: true
+    @state = @choosingTarget
+  choosingTarget: ->
+    switch @keyCode
+      when ESC
+        @state = @cancelLinking
+        return @state()
+      when RETURN
+        @state = @labelingLink
+        return @state()
+      when LEFTARROW, UPARROW
         @targetIndex -= 1
-      when 39, 40 #rightarrow, downarrow
+      when RIGHTARROW, DOWNARROW
         @targetIndex += 1
-    @targetIndex = @targetIndex % nodes.length
+    if @targetIndex < 0
+      @targetIndex = nodes.length - 1
+    else if @targetIndex == nodes.length
+      @targetIndex = 0
     @target = nodes[@targetIndex]
-
+    @currentLink.target = @target
+  cancelLinking: ->
+    links.pop()
+    @source = undefined
+    @target = undefined
+    @targetIndex = undefined
+    @currentLink = undefined
+    @state = @creating
+    
 nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
 links = if localStorage.links then JSON.parse(localStorage.links) else []
 
@@ -82,7 +131,7 @@ restart = ->
         when fsm.source
           "#d00"
         when fsm.target
-          "#0d0"
+          "#0dd"
         else
           "#000"
     )
@@ -107,7 +156,7 @@ force.on "tick", ->
         when fsm.source
           "#d00"
         when fsm.target
-          "#0d0"
+          "#0dd"
         else
           "#000"
     )
