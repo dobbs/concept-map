@@ -102,6 +102,7 @@ class KeyboardFsm
     @target = undefined
     @targetIndex = undefined
     @currentLink = undefined
+    @currentNode = undefined
     @state = @creating
     
 nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
@@ -135,12 +136,9 @@ restart = ->
     .enter()
     .append("g")
     .attr("class", "link")
-  link.append("line")
-  link.append("text")
-    .attr("class", "annotation")
-    .text((d)->d.label)
-
-  svg.selectAll("g.link").selectAll("text.annotation").data(links)
+  line = link.append("line")
+  note = link.append("text")
+    .attr("class", "linknote")
     .text((d)->d.label)
 
   svg.selectAll("g.link").data(links).exit().remove()
@@ -164,15 +162,16 @@ restart = ->
   force.start()
 
 force.on "tick", ->
-  lines = svg.selectAll("g.link")
+  lines = svg.selectAll("g.link").data(links)
   lines.selectAll("line")
     .attr("x1", (d) -> d.source.x)
     .attr("y1", (d) -> d.source.y)
     .attr("x2", (d) -> d.target.x)
     .attr("y2", (d) -> d.target.y)
   lines.selectAll("text")
-    .attr("x", (d) -> d.source.x + (d.target.x - d.source.x) / 2 )
-    .attr("y", (d) -> d.source.y + (d.target.y - d.source.y) / 2 )
+    .attr("x", (d) -> d.target.x + (d.source.x - d.target.x) / 2 )
+    .attr("y", (d) -> d.target.y + (d.source.y - d.target.y) / 2 )
+    .text((d) -> d.label)
     .style("fill", "#000")
 
   svg.selectAll("text.node")
