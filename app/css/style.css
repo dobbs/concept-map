@@ -7,6 +7,10 @@ svg {
   border: 1px solid #369;
 }
 
+text {
+  text-anchor: middle;
+  baseline-shift: -30%;
+}
 
 .cursor {
   fill: none;
