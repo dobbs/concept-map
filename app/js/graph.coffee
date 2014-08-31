@@ -113,7 +113,6 @@ class KeyboardFsm
         @state = @cleanupLinking
         @state()
       else
-        console.log @currentLink.linknode
         @currentLink.linknode.text = @el.value
   cleanupLinking: ->
     @source = undefined
@@ -161,17 +160,37 @@ keyboardListener = d3.select("body").append("input")
 
 fsm = new KeyboardFsm(keyboardListener)
 
+computeSelfLinkPath = (d) ->
+  r = 25 # linkDistance / 2
+  [x, y] = [d.source.x, d.source.y]
+  [x1, y1] = if d.linknode?
+    [d.linknode.x, d.linknode.y]
+  else
+    [x - 2*r, y - 2*r]
+  "M#{x} #{y} A #{r} #{r}, 0, 0, 0, #{x1} #{y1} A #{r} #{r}, 0, 0, 0, #{x} #{y}"
+
 tick = ->
-  lines = svg.selectAll("g.link").data(links)
-  lines.selectAll("line")
+  [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
+  line = svg.selectAll("g.link").data(otherLinks)
+  line.selectAll("line")
     .attr("x1", (d) -> d.source.x)
     .attr("y1", (d) -> d.source.y)
     .attr("x2", (d) -> d.target.x)
     .attr("y2", (d) -> d.target.y)
-  lines.selectAll("text")
+  line.selectAll("text")
     .attr("x", (d) -> midpoint(d).x)
     .attr("y", (d) -> midpoint(d).y)
     .text((d) -> d.linknode?.text)
+    .style("fill", "#000")
+
+  selflink = svg.selectAll("g.selflink").data(selfLinks)
+  selflink.selectAll("path")
+    .attr("d", computeSelfLinkPath)
+    .style("fill", "none")
+  selflink.selectAll("text")
+    .text((d) -> d.linknode?.text)
+    .attr("x", (d) -> d.linknode?.x)
+    .attr("y", (d) -> d.linknode?.y)
     .style("fill", "#000")
 
   svg.selectAll("text.pointnode").data(pointnodes())
@@ -189,16 +208,24 @@ tick = ->
     )
   
 restart = ->
-  link = svg.selectAll("g.link").data(links)
+  [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
+  svg.selectAll("g.link").data(otherLinks).exit().remove()
+  link = svg.selectAll("g.link").data(otherLinks)
     .enter()
     .append("g")
     .attr("class", "link")
-  line = link.append("line")
-  linknode = link.append("text")
+  link.append("line")
+  link.append("text")
     .attr("class", "linknode")
-    .text((d) -> d.linknode?.text)
 
-  svg.selectAll("g.link").data(links).exit().remove()
+  svg.selectAll("g.selflink").data(selfLinks).exit().remove()
+  selflink = svg.selectAll("g.selflink").data(selfLinks)
+    .enter()
+    .append("g")
+    .attr("class", "selflink")
+  selflink.append("path")
+  selflink.append("text")
+    .attr("class", "linknode")
   
   labels = svg.selectAll("text.pointnode").data(pointnodes())
   labels.enter().append("text")

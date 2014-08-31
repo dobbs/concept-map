@@ -28,8 +28,6 @@ text {
   font-weight: bold;
 }
 
-.link {
+.link, .selflink {
   stroke: #999;
 }
-
-    
