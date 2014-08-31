@@ -230,15 +230,6 @@ restart = ->
   labels = svg.selectAll("text.pointnode").data(pointnodes())
   labels.enter().append("text")
     .attr("class", "pointnode")
-    .style("fill", (d) ->
-      switch d
-        when fsm.source
-          "#d00"
-        when fsm.target
-          "#0dd"
-        else
-          "#000"
-    )
     .text((d) -> d.text)
     .on "click", fsm.edit.bind(fsm)
   tick()
