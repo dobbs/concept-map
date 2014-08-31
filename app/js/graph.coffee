@@ -11,6 +11,9 @@ SHIFT = 16
 OPTION = 18
 COMMAND = 91
 
+midpoint = (link) ->
+  x: link.target.x + (link.source.x - link.target.x) / 2
+  y: link.target.y + (link.source.y - link.target.y) / 2
 class KeyboardFsm
   constructor: (selection) ->
     @selection = selection
@@ -27,25 +30,19 @@ class KeyboardFsm
     @selection.node().value = d.text
     @currentNode = d
     @state = @labeling
-  createPointNode: (text, x=Math.random()*h, y=Math.random()*w) ->
+  createPointNode: (text) ->
     pointnode =
       type: "pointnode"
       text: text
-      x: x
-      y: y
-      uid: pointnodes.length*1000
-    pointnodes.push(pointnode)
-    recalculateNodes()
+    nodes.push(pointnode)
     pointnode
   createLinkNode: (link) ->
     linknode =
       type: "linknode"
       text: ""
-      x: link.target.x + (link.source.x - link.target.x) / 2
-      y: link.target.y + (link.source.y - link.target.y) / 2
-      uid: linknodes.length*1000+1
-    linknodes.push(linknode)
-    recalculateNodes()
+      x: midpoint(link).x
+      y: midpoint(link).y
+    nodes.push(linknode)
     linknode
   beginLabeling: ->
     @currentNode = @createPointNode @selection.node().value
@@ -71,39 +68,35 @@ class KeyboardFsm
           @state()
   beginLinking: ->
     if @currentNode is undefined
-      @currentNode = pointnodes[0]
+      @currentNode = pointnodes()[0]
     @source = @currentNode
     @target = @currentNode
-    # the following array index works by accident
-    # pointnodes are always the first in the nodes array
-    # and orderd by their creation.  Probably need a more
-    # explicitly coupled way of holding and adjusting a
-    # cursor in this of pointnodes.
-    @targetIndex = Math.floor(@currentNode.uid/1000)
-    @currentLink = 
+    @targetIndex = @currentNode.index
+    @currentLink =
       source: @source
       target: @target
+      linknode: null
     links.push(@currentLink)
-    @currentLink.linknode = @createLinkNode(@currentLink)
-    linknodes.push(@currentLink.linknode)
     @state = @choosingTarget
   choosingTarget: ->
-    switch @keyCode
-      when ESC
-        @state = @cancelLinking
-        return @state()
-      when RETURN
-        @state = @beginLabelingLink
-        return @state()
-      when LEFTARROW, UPARROW
-        @targetIndex -= 1
-      when RIGHTARROW, DOWNARROW
-        @targetIndex += 1
-    if @targetIndex < 0
-      @targetIndex = pointnodes.length - 1
-    else if @targetIndex == pointnodes.length
-      @targetIndex = 0
-    @target = pointnodes[@targetIndex]
+    loop
+      switch @keyCode
+        when ESC
+          @state = @cancelLinking
+          return @state()
+        when RETURN
+          @state = @beginLabelingLink
+          return @state()
+        when LEFTARROW, UPARROW
+          @targetIndex -= 1
+        when RIGHTARROW, DOWNARROW
+          @targetIndex += 1
+      if @targetIndex < 0
+        @targetIndex = nodes.length - 1
+      else if @targetIndex == nodes.length
+        @targetIndex = 0
+      @target = nodes[@targetIndex]
+      break if @target.type is "pointnode" #skip linknodes when choosing a target
     @currentLink.target = @target
   cancelLinking: ->
     links.pop()
@@ -111,6 +104,8 @@ class KeyboardFsm
     @state()
   beginLabelingLink: ->
     @el.value = ""
+    linknode = @createLinkNode(@currentLink)
+    @currentLink.linknode = linknode
     @state = @labelingLink
   labelingLink: ->
     switch @keyCode
@@ -118,6 +113,7 @@ class KeyboardFsm
         @state = @cleanupLinking
         @state()
       else
+        console.log @currentLink.linknode
         @currentLink.linknode.text = @el.value
   cleanupLinking: ->
     @source = undefined
@@ -128,21 +124,26 @@ class KeyboardFsm
     @el.value = ""
     @state = @creating
     
-pointnodes = if localStorage.pointnodes then JSON.parse(localStorage.pointnodes) else []
-linknodes = if localStorage.linknodes then JSON.parse(localStorage.linknodes) else []
-nodes = []
-recalculateNodes = ->
-  nodes.length = 0
-  _(nodes).extend(_.flatten([pointnodes, linknodes]))
-links = if localStorage.links then JSON.parse(localStorage.links) else []
+nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
+links = if localStorage.links
+  _(JSON.parse(localStorage.links)).map (link) ->
+    link.linknode = nodes[link.linknode]
+    link
+else
+  []
+pointnodes = -> _(nodes).filter (n) -> n.type is "pointnode"
+linknodes = -> _(nodes).filter (n) -> n.type is "linknode"
 
 @saveGraph = ->
-  localStorage.pointnodes = JSON.stringify(pointnodes)
-  localStorage.linknodes = JSON.stringify(linknodes)
-  localStorage.links = JSON.stringify(links)
+  localStorage.nodes = JSON.stringify(nodes)
+  cleanLinks = links.map (orig) ->
+    source: orig.source.index
+    target: orig.target.index
+    linknode: orig.linknode.index
+  localStorage.links = JSON.stringify(cleanLinks)
 
 force = d3.layout.force()
-  .charge(-80)
+  .charge((d)-> -50 - (d.text.length * 2))
   .linkDistance(50)
   .size([w, h])
   .nodes(nodes)
@@ -161,9 +162,6 @@ keyboardListener = d3.select("body").append("input")
 fsm = new KeyboardFsm(keyboardListener)
 
 tick = ->
-  midpoint = (link) ->
-    x: link.target.x + (link.source.x - link.target.x) / 2
-    y: link.target.y + (link.source.y - link.target.y) / 2
   lines = svg.selectAll("g.link").data(links)
   lines.selectAll("line")
     .attr("x1", (d) -> d.source.x)
@@ -173,10 +171,10 @@ tick = ->
   lines.selectAll("text")
     .attr("x", (d) -> midpoint(d).x)
     .attr("y", (d) -> midpoint(d).y)
-    .text((d) -> d.linknode.text)
+    .text((d) -> d.linknode?.text)
     .style("fill", "#000")
 
-  svg.selectAll("text.pointnode").data(pointnodes)
+  svg.selectAll("text.pointnode").data(pointnodes())
     .attr("x", (d) -> d.x)
     .attr("y", (d) -> d.y)
     .text((d) -> d.text)
@@ -198,11 +196,11 @@ restart = ->
   line = link.append("line")
   linknode = link.append("text")
     .attr("class", "linknode")
-    .text((d)->d.linknode.text)
+    .text((d) -> d.linknode?.text)
 
   svg.selectAll("g.link").data(links).exit().remove()
   
-  labels = svg.selectAll("text.pointnode").data(pointnodes)
+  labels = svg.selectAll("text.pointnode").data(pointnodes())
   labels.enter().append("text")
     .attr("class", "pointnode")
     .style("fill", (d) ->
@@ -215,7 +213,6 @@ restart = ->
           "#000"
     )
     .text((d) -> d.text)
-    .call(force.drag)
     .on "click", fsm.edit.bind(fsm)
   tick()
   fsm.focus()
@@ -227,6 +224,9 @@ d3.select('body').on "click", fsm.focus.bind(fsm)
 fsm.focus()
 restart();
 
+@pointnodes = pointnodes
+@linknodes = linknodes
+@force = force
 @nodes = nodes
 @links = links
 @fsm = fsm
