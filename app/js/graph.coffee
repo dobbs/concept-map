@@ -14,6 +14,9 @@ COMMAND = 91
 midpoint = (link) ->
   x: link.target.x + (link.source.x - link.target.x) / 2
   y: link.target.y + (link.source.y - link.target.y) / 2
+outside = (node) ->
+  x: node.x - 1.5*(w/2 - node.x)
+  y: node.y - 1.5*(h/2 - node.y)
 class KeyboardFsm
   constructor: (selection) ->
     @selection = selection
@@ -163,10 +166,7 @@ fsm = new KeyboardFsm(keyboardListener)
 computeSelfLinkPath = (d) ->
   r = 25 # linkDistance / 2
   [x, y] = [d.source.x, d.source.y]
-  [x1, y1] = if d.linknode?
-    [d.linknode.x, d.linknode.y]
-  else
-    [x - 2*r, y - 2*r]
+  [x1, y1] = [outside(d.source).x, outside(d.source).y]
   "M#{x} #{y} A #{r} #{r}, 0, 0, 0, #{x1} #{y1} A #{r} #{r}, 0, 0, 0, #{x} #{y}"
 
 tick = ->
@@ -184,14 +184,14 @@ tick = ->
     .style("fill", "#000")
 
   selflink = svg.selectAll("g.selflink").data(selfLinks)
+  selflink.selectAll("text")
+    .text((d) -> d.linknode?.text)
+    .attr("x", (d) -> outside(d.source).x)
+    .attr("y", (d) -> outside(d.source).y)
+    .style("fill", "#000")
   selflink.selectAll("path")
     .attr("d", computeSelfLinkPath)
     .style("fill", "none")
-  selflink.selectAll("text")
-    .text((d) -> d.linknode?.text)
-    .attr("x", (d) -> d.linknode?.x)
-    .attr("y", (d) -> d.linknode?.y)
-    .style("fill", "#000")
 
   svg.selectAll("text.pointnode").data(pointnodes())
     .attr("x", (d) -> d.x)
