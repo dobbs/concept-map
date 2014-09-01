@@ -171,33 +171,38 @@ computeSelfLinkPath = (d) ->
 
 tick = ->
   [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
-  line = svg.selectAll("g.link").data(otherLinks)
-  line.selectAll("line")
+
+  do ->
+    join = svg.selectAll("g.link").data(otherLinks)
+    join.selectAll("line")
     .attr("x1", (d) -> d.source.x)
     .attr("y1", (d) -> d.source.y)
     .attr("x2", (d) -> d.target.x)
     .attr("y2", (d) -> d.target.y)
-  line.selectAll("text")
+    join.selectAll("text")
     .attr("x", (d) -> midpoint(d).x)
     .attr("y", (d) -> midpoint(d).y)
     .text((d) -> d.linknode?.text)
     .style("fill", "#000")
 
-  selflink = svg.selectAll("g.selflink").data(selfLinks)
-  selflink.selectAll("text")
+  do ->
+    join = svg.selectAll("g.selflink").data(selfLinks)
+    join.selectAll("text")
     .text((d) -> d.linknode?.text)
     .attr("x", (d) -> outside(d.source).x)
     .attr("y", (d) -> outside(d.source).y)
     .style("fill", "#000")
-  selflink.selectAll("path")
+    join.selectAll("path")
     .attr("d", computeSelfLinkPath)
     .style("fill", "none")
 
-  svg.selectAll("text.pointnode").data(pointnodes())
+  do ->
+    join = svg.selectAll("text.pointnode").data(pointnodes())
+    join
     .attr("x", (d) -> d.x)
     .attr("y", (d) -> d.y)
     .text((d) -> d.text)
-    .style("fill", (d) ->
+      .style "fill", (d) ->
       switch d
         when fsm.source
           "#d00"
@@ -205,33 +210,28 @@ tick = ->
           "#0dd"
         else
           "#000"
-    )
   
 restart = ->
   [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
-  svg.selectAll("g.link").data(otherLinks).exit().remove()
-  link = svg.selectAll("g.link").data(otherLinks)
-    .enter()
-    .append("g")
-    .attr("class", "link")
-  link.append("line")
-  link.append("text")
-    .attr("class", "linknode")
 
-  svg.selectAll("g.selflink").data(selfLinks).exit().remove()
-  selflink = svg.selectAll("g.selflink").data(selfLinks)
-    .enter()
-    .append("g")
-    .attr("class", "selflink")
-  selflink.append("path")
-  selflink.append("text")
-    .attr("class", "linknode")
-  
-  labels = svg.selectAll("text.pointnode").data(pointnodes())
-  labels.enter().append("text")
-    .attr("class", "pointnode")
-    .text((d) -> d.text)
-    .on "click", fsm.edit.bind(fsm)
+  for type in [
+    ["g.link", otherLinks, "line", "text.linknode"]
+    ["g.selflink", selfLinks, "path", "text.linknode"]
+    ["text.pointnode", pointnodes(), (selection) -> selection.on("click", fsm.edit.bind(fsm))]
+  ]
+    do (type) ->
+      [parent, data, children...] = type
+      [tag, className] = parent.split(".")
+      join = svg.selectAll(parent).data(data)
+      join.exit().remove()
+      it = join.enter().append(tag).attr("class", className)
+      for child in children
+        do (child) ->
+          if _(child).isFunction()
+            child(it)
+          else
+            [cTag, cClassName] = child.split(".")
+            it.append(cTag).attr("class", cClassName)
   tick()
   fsm.focus()
   force.start()
