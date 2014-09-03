@@ -20,7 +20,7 @@ outside = (node) ->
 class KeyboardFsm
   constructor: (selection) ->
     @selection = selection
-    @state = @creating
+    @state = @idling
     @selection.on "keyup", => @keyup()
   keyup: ->
     @keyCode = d3.event.keyCode
@@ -43,39 +43,76 @@ class KeyboardFsm
       y: midpoint(link).y
     nodes.push(linknode)
     linknode
-  beginLabeling: ->
-    @currentNode = @createPointNode @selection.node().value
-    @state = @labeling
-  labeling: ->
+  idling: ->
     switch @keyCode
       when ESC
-        @state = @beginLinking
-        @state()
-      when RETURN
-        @el.setSelectionRange(0, @el.value.length)
-        @state = @creating
-      else
-        @currentNode.text = @el.value
-  creating: ->
-    switch @keyCode
-      when ESC
-        @state = @beginLinking
+        @state = @beginChoosingSource
         @state()
       else
         if /\w/.test @key
-          @state = @beginLabeling
-          @state()
+          @state = @createAndBeginLabeling
+        @state()
+  createAndBeginLabeling: ->
+    @nodeToLabel = @createPointNode @el.value
+    @state = @labeling
+  labeling: ->
+    switch @keyCode
+      # when ESC
+      #   @state = @beginLinking
+      #   @state()
+      when RETURN
+        @state = @cleanupLinking
+        return @state()
+      else
+        @nodeToLabel.text = @el.value
+  beginChoosingSource: ->
+    if @source is undefined
+      @source = pointnodes()[0]
+    @nodeToLabel = @source
+    @el.value = @nodeToLabel.text
+    @sourceIndex = @source.index
+    @target = undefined
+    @targetIndex = undefined
+    @currentLink = undefined
+    @cancelFn = -> null
+    @state = @choosingSource
+  choosingSource: ->
+    loop
+      switch @keyCode
+        when ESC
+          @state = @cancelLinking
+          return @state()
+        when RETURN
+          @state = @beginLinking
+          return @state()
+        when LEFTARROW, UPARROW
+          @sourceIndex -= 1
+        when RIGHTARROW, DOWNARROW
+          @sourceIndex += 1
+        else
+          if /\w/.test @key
+            @state = @labeling
+            return @state()
+      if @sourceIndex < 0
+        @sourceIndex = nodes.length - 1
+      else if @sourceIndex == nodes.length
+        @sourceIndex = 0
+      @source = nodes[@sourceIndex]
+      break if @source.type is "pointnode" #skip linknodes when choosing a source
+    @nodeToLabel = @source
+    @el.value = @nodeToLabel.text
   beginLinking: ->
-    if @currentNode is undefined
-      @currentNode = pointnodes()[0]
-    @source = @currentNode
-    @target = @currentNode
-    @targetIndex = @currentNode.index
+    if @target is undefined
+      @target = @source
+    @targetIndex = @target.index
     @currentLink =
       source: @source
       target: @target
       linknode: null
     links.push(@currentLink)
+    @cancelFn = ->
+      links.pop()
+      @cancelFn = -> null
     @state = @choosingTarget
   choosingTarget: ->
     loop
@@ -98,7 +135,8 @@ class KeyboardFsm
       break if @target.type is "pointnode" #skip linknodes when choosing a target
     @currentLink.target = @target
   cancelLinking: ->
-    links.pop()
+    if _(@cancelFn).isFunction()
+      @cancelFn()
     @state = @cleanupLinking
     @state()
   beginLabelingLink: ->
@@ -116,11 +154,13 @@ class KeyboardFsm
   cleanupLinking: ->
     @source = undefined
     @target = undefined
+    @sourceIndex = undefined
     @targetIndex = undefined
     @currentLink = undefined
-    @currentNode = undefined
+    @nodeToLabel = undefined
     @el.value = ""
-    @state = @creating
+    @cancelFn = -> null
+    @state = @idling
     
 nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
 links = if localStorage.links
@@ -198,7 +238,7 @@ tick = ->
     .attr("x", (d) -> d.x)
     .attr("y", (d) -> d.y)
     .text((d) -> d.text)
-      .style "fill", (d) ->
+    .style "fill", (d) ->
       switch d
         when fsm.source
           "#d00"
