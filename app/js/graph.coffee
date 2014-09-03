@@ -29,10 +29,6 @@ class KeyboardFsm
     @state()
     restart()
   focus: -> @selection.node().focus()
-  edit: (d) ->
-    @selection.node().value = d.text
-    @currentNode = d
-    @state = @labeling
   createPointNode: (text) ->
     pointnode =
       type: "pointnode"
@@ -217,7 +213,7 @@ restart = ->
   for type in [
     ["g.link", otherLinks, "line", "text.linknode"]
     ["g.selflink", selfLinks, "path", "text.linknode"]
-    ["text.pointnode", pointnodes(), (selection) -> selection.on("click", fsm.edit.bind(fsm))]
+    ["text.pointnode", pointnodes()]
   ]
     do (type) ->
       [parent, data, children...] = type
@@ -227,9 +223,6 @@ restart = ->
       it = join.enter().append(tag).attr("class", className)
       for child in children
         do (child) ->
-          if _(child).isFunction()
-            child(it)
-          else
             [cTag, cClassName] = child.split(".")
             it.append(cTag).attr("class", cClassName)
   tick()
