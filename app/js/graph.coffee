@@ -211,41 +211,39 @@ tick = ->
   do ->
     join = svg.selectAll("g.link").data(otherLinks)
     join.selectAll("line")
-    .attr("x1", (d) -> d.source.x)
-    .attr("y1", (d) -> d.source.y)
-    .attr("x2", (d) -> d.target.x)
-    .attr("y2", (d) -> d.target.y)
+      .attr("x1", (d) -> d.source.x)
+      .attr("y1", (d) -> d.source.y)
+      .attr("x2", (d) -> d.target.x)
+      .attr("y2", (d) -> d.target.y)
     join.selectAll("text")
-    .attr("x", (d) -> midpoint(d).x)
-    .attr("y", (d) -> midpoint(d).y)
-    .text((d) -> d.linknode?.text)
-    .style("fill", "#000")
+      .attr("x", (d) -> midpoint(d).x)
+      .attr("y", (d) -> midpoint(d).y)
+      .text((d) -> d.linknode?.text)
 
   do ->
     join = svg.selectAll("g.selflink").data(selfLinks)
     join.selectAll("text")
-    .text((d) -> d.linknode?.text)
-    .attr("x", (d) -> outside(d.source).x)
-    .attr("y", (d) -> outside(d.source).y)
-    .style("fill", "#000")
+      .text((d) -> d.linknode?.text)
+      .attr("x", (d) -> outside(d.source).x)
+      .attr("y", (d) -> outside(d.source).y)
     join.selectAll("path")
-    .attr("d", computeSelfLinkPath)
-    .style("fill", "none")
+      .attr("d", computeSelfLinkPath)
+      .style("fill", "none")
 
   do ->
     join = svg.selectAll("text.pointnode").data(pointnodes())
     join
-    .attr("x", (d) -> d.x)
-    .attr("y", (d) -> d.y)
-    .text((d) -> d.text)
-    .style "fill", (d) ->
-      switch d
-        when fsm.source
-          "#d00"
-        when fsm.target
-          "#0dd"
-        else
-          "#000"
+      .attr("x", (d) -> d.x)
+      .attr("y", (d) -> d.y)
+      .text((d) -> d.text)
+      .style "fill", (d) ->
+        switch d
+          when fsm.source
+            "#d00"
+          when fsm.target
+            "#0dd"
+          else
+            "#000"
   
 restart = ->
   [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
