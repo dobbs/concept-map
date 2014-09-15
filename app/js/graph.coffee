@@ -205,6 +205,29 @@ computeSelfLinkPath = (d) ->
   [x1, y1] = [outside(d.source).x, outside(d.source).y]
   "M#{x} #{y} A #{r} #{r}, 0, 0, 0, #{x1} #{y1} A #{r} #{r}, 0, 0, 0, #{x} #{y}"
 
+class PointnodesPresenter
+  constructor: (@dataFn) ->
+  tick: ->
+    join = svg.selectAll("text.pointnodes").data(@dataFn())
+    join
+      .attr("x", (d) -> d.x)
+      .attr("y", (d) -> d.y)
+      .text((d) -> d.text)
+      .style "fill", (d) ->
+        switch d
+          when fsm.source
+            "#d00"
+          when fsm.target
+            "#0dd"
+          else
+            "#000"
+  restart: ->
+    join = svg.selectAll("text.pointnodes").data(@dataFn())
+    join.exit().remove()
+    join.enter().append("text").attr("class", "pointnodes")
+
+pointnodesPresenter = new PointnodesPresenter pointnodes
+
 tick = ->
   [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
 
@@ -231,27 +254,14 @@ tick = ->
       .style("fill", "none")
 
   do ->
-    join = svg.selectAll("text.pointnode").data(pointnodes())
-    join
-      .attr("x", (d) -> d.x)
-      .attr("y", (d) -> d.y)
-      .text((d) -> d.text)
-      .style "fill", (d) ->
-        switch d
-          when fsm.source
-            "#d00"
-          when fsm.target
-            "#0dd"
-          else
-            "#000"
-  
+    pointnodesPresenter.tick()
+
 restart = ->
   [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
 
   for type in [
     ["g.link", otherLinks, "line", "text.linknode"]
     ["g.selflink", selfLinks, "path", "text.linknode"]
-    ["text.pointnode", pointnodes()]
   ]
     do (type) ->
       [parent, data, children...] = type
@@ -263,6 +273,8 @@ restart = ->
         do (child) ->
             [cTag, cClassName] = child.split(".")
             it.append(cTag).attr("class", cClassName)
+  pointnodesPresenter.restart()
+
   tick()
   fsm.focus()
   force.start()
