@@ -208,12 +208,18 @@ computeSelfLinkPath = (d) ->
 class PointnodesPresenter
   constructor: (@dataFn) ->
   tick: ->
-    join = svg.selectAll("text.pointnodes").data(@dataFn())
-    join
-      .attr("x", (d) -> d.x)
-      .attr("y", (d) -> d.y)
+    nodeWidth = 90
+    charWidth = 8
+    lineHeight = 18
+    nodeHeight = (d) -> Math.ceil(d.text.length * charWidth / nodeWidth) * lineHeight
+    join = svg.selectAll(".pointnode").data(@dataFn())
+      .attr("x", (d) -> d.x - nodeWidth/2)
+      .attr("y", (d) -> d.y - nodeHeight(d)/2)
+      .attr("width", nodeWidth)
+      .attr("height", nodeHeight)
+    join.selectAll("p")
       .text((d) -> d.text)
-      .style "fill", (d) ->
+      .style "color", (d) ->
         switch d
           when fsm.source
             "#d00"
@@ -222,9 +228,11 @@ class PointnodesPresenter
           else
             "#000"
   restart: ->
-    join = svg.selectAll("text.pointnodes").data(@dataFn())
+    join = svg.selectAll(".pointnode").data(@dataFn())
     join.exit().remove()
-    join.enter().append("text").attr("class", "pointnodes")
+    join.enter().append("foreignObject").attr("class", "pointnode")
+      .append("xhtml:body")
+      .append("p")
 
 pointnodesPresenter = new PointnodesPresenter pointnodes
 

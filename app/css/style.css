@@ -31,3 +31,8 @@ text {
 .link, .selflink {
   stroke: #999;
 }
+
+.pointnode p {
+  margin: 0;
+  text-align: center;
+}
