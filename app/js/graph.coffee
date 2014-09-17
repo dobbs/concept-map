@@ -236,23 +236,33 @@ class PointnodesPresenter
 
 pointnodesPresenter = new PointnodesPresenter pointnodes
 
-tick = ->
-  [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
+partitionedLinks = -> _(links).partition (its) -> its.source is its.target
+otherLinks = -> partitionedLinks()[1]
+selfLinks = -> partitionedLinks()[0]
 
-  do ->
-    join = svg.selectAll("g.link").data(otherLinks)
+class OtherLinksPresenter
+  constructor: (@dataFn) ->
+  tick: ->
+    join = svg.selectAll("g.link").data(@dataFn())
     join.selectAll("line")
-      .attr("x1", (d) -> d.source.x)
-      .attr("y1", (d) -> d.source.y)
-      .attr("x2", (d) -> d.target.x)
-      .attr("y2", (d) -> d.target.y)
+      .attr("x1", (d) -> d.source.x).attr("y1", (d) -> d.source.y)
+      .attr("x2", (d) -> d.target.x).attr("y2", (d) -> d.target.y)
     join.selectAll("text")
-      .attr("x", (d) -> midpoint(d).x)
-      .attr("y", (d) -> midpoint(d).y)
+      .attr("x", (d) -> midpoint(d).x).attr("y", (d) -> midpoint(d).y)
       .text((d) -> d.linknode?.text)
+  restart: ->
+    join = svg.selectAll("g.link").data(@dataFn())
+    join.exit().remove()
+    it = join.enter().append("g").attr("class", "link")
+    it.append("line")
+    it.append("text").attr("class", "linknode")
+    
+linksPresenter = new OtherLinksPresenter otherLinks
 
-  do ->
-    join = svg.selectAll("g.selflink").data(selfLinks)
+class SelfLinksPresenter
+  constructor: (@dataFn) ->
+  tick: ->
+    join = svg.selectAll("g.selflink").data(@dataFn())
     join.selectAll("text")
       .text((d) -> d.linknode?.text)
       .attr("x", (d) -> outside(d.source).x)
@@ -260,29 +270,24 @@ tick = ->
     join.selectAll("path")
       .attr("d", computeSelfLinkPath)
       .style("fill", "none")
+  restart: ->
+    join = svg.selectAll("g.selflink").data(@dataFn())
+    join.exit().remove()
+    it = join.enter().append("g").attr("class", "selflink")
+    it.append("path")
+    it.append("text").attr("class", "linknode")
+    
+selflinksPresenter = new SelfLinksPresenter selfLinks
 
-  do ->
-    pointnodesPresenter.tick()
+tick = ->
+  linksPresenter.tick()
+  selflinksPresenter.tick()
+  pointnodesPresenter.tick()
 
 restart = ->
-  [selfLinks, otherLinks] = _(links).partition (its) -> its.source is its.target
-
-  for type in [
-    ["g.link", otherLinks, "line", "text.linknode"]
-    ["g.selflink", selfLinks, "path", "text.linknode"]
-  ]
-    do (type) ->
-      [parent, data, children...] = type
-      [tag, className] = parent.split(".")
-      join = svg.selectAll(parent).data(data)
-      join.exit().remove()
-      it = join.enter().append(tag).attr("class", className)
-      for child in children
-        do (child) ->
-            [cTag, cClassName] = child.split(".")
-            it.append(cTag).attr("class", cClassName)
+  linksPresenter.restart()
+  selflinksPresenter.restart()
   pointnodesPresenter.restart()
-
   tick()
   fsm.focus()
   force.start()
