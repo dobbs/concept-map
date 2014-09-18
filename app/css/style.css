@@ -32,7 +32,7 @@ text {
   stroke: #999;
 }
 
-.pointnode p {
+.pointnode p, .linknode p {
   margin: 0;
   text-align: center;
 }
