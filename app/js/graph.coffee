@@ -208,7 +208,8 @@ computeSelfLinkPath = (d) ->
 nodeWidth = 90
 charWidth = 8
 lineHeight = 18
-nodeHeight = (d) -> Math.ceil(d.text.length * charWidth / nodeWidth) * lineHeight
+nodeHeight = (d) ->
+  (if d? then Math.ceil(d.text.length * charWidth / nodeWidth) else 1) * lineHeight
 class PointnodesPresenter
   constructor: (@dataFn) ->
   tick: ->
@@ -250,9 +251,9 @@ class OtherLinksPresenter
     join.selectAll(".linknode")
       .attr("x", (d) -> midpoint(d).x - nodeWidth/2)
       .attr("y", (d) ->
-        midpoint(d).y - (if d.linknode? then nodeHeight(d.linknode) else lineHeight)/2)
+        midpoint(d).y - nodeHeight(d.linknode)/2)
       .attr("width", nodeWidth)
-      .attr("height", (d) -> if d.linknode? then nodeHeight(d.linknode) else lineHeight)
+      .attr("height", (d) -> nodeHeight(d.linknode))
       .selectAll("p")
         .text((d) -> d.linknode?.text)
   restart: ->
@@ -269,10 +270,13 @@ class SelfLinksPresenter
   constructor: (@dataFn) ->
   tick: ->
     join = svg.selectAll("g.selflink").data(@dataFn())
-    join.selectAll("text")
-      .text((d) -> d.linknode?.text)
-      .attr("x", (d) -> outside(d.source).x)
-      .attr("y", (d) -> outside(d.source).y)
+    join.selectAll(".linknode")
+      .attr("x", (d) -> outside(d.source).x - nodeWidth/2)
+      .attr("y", (d) -> outside(d.source).y - nodeHeight(d.linknode)/2)
+      .attr("width", nodeWidth)
+      .attr("height", (d) -> nodeHeight(d.linknode))
+      .selectAll("p")
+        .text((d) -> d.linknode?.text)
     join.selectAll("path")
       .attr("d", computeSelfLinkPath)
       .style("fill", "none")
@@ -281,7 +285,9 @@ class SelfLinksPresenter
     join.exit().remove()
     it = join.enter().append("g").attr("class", "selflink")
     it.append("path")
-    it.append("text").attr("class", "linknode")
+    it.append("foreignObject").attr("class", "linknode")
+      .append("xhtml:body").append("p")
+    
     
 selflinksPresenter = new SelfLinksPresenter selfLinks
 
