@@ -7,27 +7,6 @@ svg {
   border: 1px solid #369;
 }
 
-text {
-  text-anchor: middle;
-  baseline-shift: -30%;
-}
-
-.cursor {
-  fill: none;
-  stroke: brown;
-  pointer-events: none;
-}
-
-.node {
-  font-size: 12pt;
-  font-weight: normal;
-  color: #444;
-}
-
-.node:hover {
-  font-weight: bold;
-}
-
 .link, .selflink {
   stroke: #999;
 }
