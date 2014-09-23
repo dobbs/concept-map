@@ -14,9 +14,13 @@ COMMAND = 91
 midpoint = (link) ->
   x: link.target.x + (link.source.x - link.target.x) / 2
   y: link.target.y + (link.source.y - link.target.y) / 2
-outside = (node) ->
-  x: node.x - 1.5*(w/2 - node.x)
-  y: node.y - 1.5*(h/2 - node.y)
+outside = (position) ->
+  dx = w/2 - position.x
+  dy = h/2 - position.y
+  ux = dx/Math.sqrt(dx*dx + dy*dy)
+  uy = dy/Math.sqrt(dx*dx + dy*dy)
+  x: position.x - 50*ux
+  y: position.y - 50*uy
 class KeyboardFsm
   constructor: (selection) ->
     @selection = selection
@@ -77,28 +81,26 @@ class KeyboardFsm
     @cancelFn = -> null
     @state = @choosingSource
   choosingSource: ->
-    loop
-      switch @keyCode
-        when ESC
-          @state = @cancelLinking
+    switch @keyCode
+      when ESC
+        @state = @cancelLinking
+        return @state()
+      when RETURN
+        @state = @beginLinking
+        return @state()
+      when LEFTARROW, UPARROW
+        @sourceIndex -= 1
+      when RIGHTARROW, DOWNARROW
+        @sourceIndex += 1
+      else
+        if /\w/.test @key
+          @state = @labeling
           return @state()
-        when RETURN
-          @state = @beginLinking
-          return @state()
-        when LEFTARROW, UPARROW
-          @sourceIndex -= 1
-        when RIGHTARROW, DOWNARROW
-          @sourceIndex += 1
-        else
-          if /\w/.test @key
-            @state = @labeling
-            return @state()
-      if @sourceIndex < 0
-        @sourceIndex = nodes.length - 1
-      else if @sourceIndex == nodes.length
-        @sourceIndex = 0
-      @source = nodes[@sourceIndex]
-      break if @source.type is "pointnode" #skip linknodes when choosing a source
+    if @sourceIndex < 0
+      @sourceIndex = nodes.length - 1
+    else if @sourceIndex == nodes.length
+      @sourceIndex = 0
+    @source = nodes[@sourceIndex]
     @nodeToLabel = @source
     @el.value = @nodeToLabel.text
   beginLinking: ->
@@ -115,24 +117,22 @@ class KeyboardFsm
       @cancelFn = -> null
     @state = @choosingTarget
   choosingTarget: ->
-    loop
-      switch @keyCode
-        when ESC
-          @state = @cancelLinking
-          return @state()
-        when RETURN
-          @state = @beginLabelingLink
-          return @state()
-        when LEFTARROW, UPARROW
-          @targetIndex -= 1
-        when RIGHTARROW, DOWNARROW
-          @targetIndex += 1
-      if @targetIndex < 0
-        @targetIndex = nodes.length - 1
-      else if @targetIndex == nodes.length
-        @targetIndex = 0
-      @target = nodes[@targetIndex]
-      break if @target.type is "pointnode" #skip linknodes when choosing a target
+    switch @keyCode
+      when ESC
+        @state = @cancelLinking
+        return @state()
+      when RETURN
+        @state = @beginLabelingLink
+        return @state()
+      when LEFTARROW, UPARROW
+        @targetIndex -= 1
+      when RIGHTARROW, DOWNARROW
+        @targetIndex += 1
+    if @targetIndex < 0
+      @targetIndex = nodes.length - 1
+    else if @targetIndex == nodes.length
+      @targetIndex = 0
+    @target = nodes[@targetIndex]
     @currentLink.target = @target
   cancelLinking: ->
     if _(@cancelFn).isFunction()
@@ -199,10 +199,19 @@ keyboardListener = d3.select("body").append("input")
 
 fsm = new KeyboardFsm(keyboardListener)
 
+computeNodePosition = (node) ->
+  if node.type is "linknode"
+    link = links.filter((link) -> link.linknode is node)[0]
+    midpoint(link)
+  else
+    x: node.x
+    y: node.y
+
 computeSelfLinkPath = (d) ->
   r = 25 # linkDistance / 2
-  [x, y] = [d.source.x, d.source.y]
-  [x1, y1] = [outside(d.source).x, outside(d.source).y]
+  position = computeNodePosition(d.source)
+  [x, y] = [position.x, position.y]
+  [x1, y1] = [outside(position).x, outside(position).y]
   "M#{x} #{y} A #{r} #{r}, 0, 0, 0, #{x1} #{y1} A #{r} #{r}, 0, 0, 0, #{x} #{y}"
 
 nodeWidth = 90
@@ -210,6 +219,14 @@ charWidth = 8
 lineHeight = 18
 nodeHeight = (d) ->
   (if d? then Math.ceil(d.text.length * charWidth / nodeWidth) else 1) * lineHeight
+nodeColor = (d) ->
+  switch d
+    when fsm.source
+      "#d00"
+    when fsm.target
+      "#0dd"
+    else
+      "#000"
 class PointnodesPresenter
   constructor: (@dataFn) ->
   tick: ->
@@ -220,14 +237,7 @@ class PointnodesPresenter
       .attr("height", nodeHeight)
     join.selectAll("p")
       .text((d) -> d.text)
-      .style "color", (d) ->
-        switch d
-          when fsm.source
-            "#d00"
-          when fsm.target
-            "#0dd"
-          else
-            "#000"
+      .style "color", nodeColor
   restart: ->
     join = svg.selectAll(".pointnode").data(@dataFn())
     join.exit().remove()
@@ -246,8 +256,10 @@ class OtherLinksPresenter
   tick: ->
     join = svg.selectAll("g.link").data(@dataFn())
     join.selectAll("line")
-      .attr("x1", (d) -> d.source.x).attr("y1", (d) -> d.source.y)
-      .attr("x2", (d) -> d.target.x).attr("y2", (d) -> d.target.y)
+      .attr("x1", (d) -> computeNodePosition(d.source).x)
+      .attr("y1", (d) -> computeNodePosition(d.source).y)
+      .attr("x2", (d) -> computeNodePosition(d.target).x)
+      .attr("y2", (d) -> computeNodePosition(d.target).y)
     join.selectAll(".linknode")
       .attr("x", (d) -> midpoint(d).x - nodeWidth/2)
       .attr("y", (d) ->
@@ -256,6 +268,7 @@ class OtherLinksPresenter
       .attr("height", (d) -> nodeHeight(d.linknode))
       .selectAll("p")
         .text((d) -> d.linknode?.text)
+        .style "color", (d) -> nodeColor(d.linknode)
   restart: ->
     join = svg.selectAll("g.link").data(@dataFn())
     join.exit().remove()
