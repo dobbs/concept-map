@@ -202,7 +202,10 @@ fsm = new KeyboardFsm(keyboardListener)
 computeNodePosition = (node) ->
   if node.type is "linknode"
     link = links.filter((link) -> link.linknode is node)[0]
-    midpoint(link)
+    if link.source is link.target
+      outside(node)
+    else
+      midpoint(link)
   else
     x: node.x
     y: node.y
@@ -290,6 +293,7 @@ class SelfLinksPresenter
       .attr("height", (d) -> nodeHeight(d.linknode))
       .selectAll("p")
         .text((d) -> d.linknode?.text)
+        .style "color", (d) -> nodeColor(d.linknode)
     join.selectAll("path")
       .attr("d", computeSelfLinkPath)
       .style("fill", "none")
