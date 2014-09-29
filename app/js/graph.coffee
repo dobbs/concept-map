@@ -24,15 +24,15 @@ outside = (position) ->
 class KeyboardFsm
   constructor: (selection) ->
     @selection = selection
+    @el = @selection.node()
     @state = @idling
     @selection.on "keyup", => @keyup()
   keyup: ->
     @keyCode = d3.event.keyCode
     @key = String.fromCharCode(@keyCode)
-    @el = @selection.node()
     @state()
     restart()
-  focus: -> @selection.node().focus()
+  focus: -> @el.focus()
   createPointNode: (text) ->
     pointnode =
       type: "pointnode"
