@@ -181,8 +181,9 @@ linknodes = -> _(nodes).filter (n) -> n.type is "linknode"
   localStorage.links = JSON.stringify(cleanLinks)
 
 force = d3.layout.force()
-  .charge((d)-> -50 - (d.text.length * 2))
-  .linkDistance(50)
+  .charge((d) -> Math.min(-50, -1*d.text.length*10))
+  .linkDistance((d) ->
+    Math.max(50, d.source.text.length + d.linknode.text.length + d.target.text.length))
   .size([w, h])
   .nodes(nodes)
   .links(links)
