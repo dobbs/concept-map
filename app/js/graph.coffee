@@ -14,6 +14,7 @@ COMMAND = 91
 midpoint = (link) ->
   x: link.target.x + (link.source.x - link.target.x) / 2
   y: link.target.y + (link.source.y - link.target.y) / 2
+
 outside = (position) ->
   dx = w/2 - position.x
   dy = h/2 - position.y
@@ -21,6 +22,68 @@ outside = (position) ->
   uy = dy/Math.sqrt(dx*dx + dy*dy)
   x: position.x - 50*ux
   y: position.y - 50*uy
+
+computeNodePosition = (node) ->
+  if node.type is "linknode"
+    link = links.filter((link) -> link.linknode is node)[0]
+    if link.source is link.target
+      outside(node)
+    else
+      midpoint(link)
+  else
+    x: node.x
+    y: node.y
+
+computeSelfLinkPath = (d) ->
+  r = 25 # linkDistance / 2
+  position = computeNodePosition(d.source)
+  [x, y] = [position.x, position.y]
+  [x1, y1] = [outside(position).x, outside(position).y]
+  "M#{x} #{y} A #{r} #{r}, 0, 0, 0, #{x1} #{y1} A #{r} #{r}, 0, 0, 0, #{x} #{y}"
+
+nodeWidth = 90
+charWidth = 8
+lineHeight = 18
+
+nodeHeight = (d) ->
+  (if d? then Math.ceil(d.text.length * charWidth / nodeWidth) else 1) * lineHeight
+
+nodeColor = (d) ->
+  switch d
+    when fsm.source
+      "#d00"
+    when fsm.target
+      "#0dd"
+    else
+      "#000"
+
+nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
+
+links = if localStorage.links
+  _(JSON.parse(localStorage.links)).map (link) ->
+    link.linknode = nodes[link.linknode]
+    link
+else
+  []
+
+pointnodes = -> _(nodes).filter (n) -> n.type is "pointnode"
+
+linknodes = -> _(nodes).filter (n) -> n.type is "linknode"
+
+partitionedLinks = -> _(links).partition (its) -> its.source is its.target
+
+otherLinks = -> partitionedLinks()[1]
+
+selfLinks = -> partitionedLinks()[0]
+
+@saveGraph = ->
+  localStorage.nodes = JSON.stringify(nodes)
+  cleanLinks = links.map (orig) ->
+    source: orig.source.index
+    target: orig.target.index
+    linknode: orig.linknode.index
+  localStorage.links = JSON.stringify(cleanLinks)
+
 class KeyboardFsm
   constructor: (selection) ->
     @selection = selection
@@ -162,24 +225,6 @@ class KeyboardFsm
     @cancelFn = -> null
     @state = @idling
     
-nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
-links = if localStorage.links
-  _(JSON.parse(localStorage.links)).map (link) ->
-    link.linknode = nodes[link.linknode]
-    link
-else
-  []
-pointnodes = -> _(nodes).filter (n) -> n.type is "pointnode"
-linknodes = -> _(nodes).filter (n) -> n.type is "linknode"
-
-@saveGraph = ->
-  localStorage.nodes = JSON.stringify(nodes)
-  cleanLinks = links.map (orig) ->
-    source: orig.source.index
-    target: orig.target.index
-    linknode: orig.linknode.index
-  localStorage.links = JSON.stringify(cleanLinks)
-
 force = d3.layout.force()
   .charge((d) -> Math.min(-50, -1*d.text.length*10))
   .linkDistance((d) ->
@@ -204,40 +249,8 @@ keyboardListener = nodeCreator.append("input")
   .attr("type", "text")
   .attr("size", 40)
   .attr("autofocus", 1)
-
 fsm = new KeyboardFsm(keyboardListener)
 
-computeNodePosition = (node) ->
-  if node.type is "linknode"
-    link = links.filter((link) -> link.linknode is node)[0]
-    if link.source is link.target
-      outside(node)
-    else
-      midpoint(link)
-  else
-    x: node.x
-    y: node.y
-
-computeSelfLinkPath = (d) ->
-  r = 25 # linkDistance / 2
-  position = computeNodePosition(d.source)
-  [x, y] = [position.x, position.y]
-  [x1, y1] = [outside(position).x, outside(position).y]
-  "M#{x} #{y} A #{r} #{r}, 0, 0, 0, #{x1} #{y1} A #{r} #{r}, 0, 0, 0, #{x} #{y}"
-
-nodeWidth = 90
-charWidth = 8
-lineHeight = 18
-nodeHeight = (d) ->
-  (if d? then Math.ceil(d.text.length * charWidth / nodeWidth) else 1) * lineHeight
-nodeColor = (d) ->
-  switch d
-    when fsm.source
-      "#d00"
-    when fsm.target
-      "#0dd"
-    else
-      "#000"
 class PointnodesPresenter
   constructor: (@dataFn) ->
   tick: ->
@@ -257,10 +270,6 @@ class PointnodesPresenter
       .append("p")
 
 pointnodesPresenter = new PointnodesPresenter pointnodes
-
-partitionedLinks = -> _(links).partition (its) -> its.source is its.target
-otherLinks = -> partitionedLinks()[1]
-selfLinks = -> partitionedLinks()[0]
 
 class OtherLinksPresenter
   constructor: (@dataFn) ->
@@ -312,7 +321,6 @@ class SelfLinksPresenter
     it.append("path")
     it.append("foreignObject").attr("class", "linknode")
       .append("xhtml:body").append("p")
-    
     
 selflinksPresenter = new SelfLinksPresenter selfLinks
 
