@@ -3,6 +3,18 @@
   border: 1px solid #dedede;
 }
 
+#graph, #panels {
+  display: inline-block;
+  vertical-align: top;
+}
+#graph { width: 410px; }
+#panels { width: 200px; }
+.panel label {
+  display: inline-block;
+  width: 14ex;
+  text-align: right;
+}
+
 svg {
   border: 1px solid #369;
 }
