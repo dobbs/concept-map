@@ -57,6 +57,14 @@ nodeColor = (d) ->
     else
       "#000"
 
+calculators =
+  nodeWidth: nodeWidth
+  nodeHeight: nodeHeight
+  nodeColor: nodeColor
+  computeNodePosition: computeNodePosition
+  midpoint: midpoint
+  outside: outside
+  
 nodes = if localStorage.nodes then JSON.parse(localStorage.nodes) else []
 
 links = if localStorage.links
@@ -252,16 +260,16 @@ keyboardListener = nodeCreator.append("input")
 fsm = new KeyboardFsm(keyboardListener)
 
 class PointnodesPresenter
-  constructor: (@dataFn) ->
+  constructor: (@svg, @calculators, @dataFn) ->
   tick: ->
-    join = svg.selectAll(".pointnode").data(@dataFn())
-      .attr("x", (d) -> d.x - nodeWidth/2)
-      .attr("y", (d) -> d.y - nodeHeight(d)/2)
-      .attr("width", nodeWidth)
-      .attr("height", nodeHeight)
+    join = @svg.selectAll(".pointnode").data(@dataFn())
+      .attr("x", (d) => d.x - @calculators.nodeWidth/2)
+      .attr("y", (d) => d.y - @calculators.nodeHeight(d)/2)
+      .attr("width", @calculators.nodeWidth)
+      .attr("height", @calculators.nodeHeight)
     join.selectAll("p")
       .text((d) -> d.text)
-      .style "color", nodeColor
+      .style "color", @calculators.nodeColor
   restart: ->
     join = svg.selectAll(".pointnode").data(@dataFn())
     join.exit().remove()
@@ -269,26 +277,26 @@ class PointnodesPresenter
       .append("xhtml:body")
       .append("p")
 
-pointnodesPresenter = new PointnodesPresenter pointnodes
+pointnodesPresenter = new PointnodesPresenter svg, calculators, pointnodes
 
 class OtherLinksPresenter
-  constructor: (@dataFn) ->
+  constructor: (@svg, @calculators, @dataFn) ->
   tick: ->
-    join = svg.selectAll("g.link").data(@dataFn())
+    join = @svg.selectAll("g.link").data(@dataFn())
     join.selectAll("line")
-      .attr("x1", (d) -> computeNodePosition(d.source).x)
-      .attr("y1", (d) -> computeNodePosition(d.source).y)
-      .attr("x2", (d) -> computeNodePosition(d.target).x)
-      .attr("y2", (d) -> computeNodePosition(d.target).y)
+      .attr("x1", (d) => @calculators.computeNodePosition(d.source).x)
+      .attr("y1", (d) => @calculators.computeNodePosition(d.source).y)
+      .attr("x2", (d) => @calculators.computeNodePosition(d.target).x)
+      .attr("y2", (d) => @calculators.computeNodePosition(d.target).y)
     join.selectAll(".linknode")
-      .attr("x", (d) -> midpoint(d).x - nodeWidth/2)
-      .attr("y", (d) ->
-        midpoint(d).y - nodeHeight(d.linknode)/2)
-      .attr("width", nodeWidth)
-      .attr("height", (d) -> nodeHeight(d.linknode))
+      .attr("x", (d) => @calculators.midpoint(d).x - @calculators.nodeWidth/2)
+      .attr("y", (d) =>
+        @calculators.midpoint(d).y - @calculators.nodeHeight(d.linknode)/2)
+      .attr("width", @calculators.nodeWidth)
+      .attr("height", (d) => @calculators.nodeHeight(d.linknode))
       .selectAll("p")
         .text((d) -> d.linknode?.text)
-        .style "color", (d) -> nodeColor(d.linknode)
+        .style "color", (d) => @calculators.nodeColor(d.linknode)
   restart: ->
     join = svg.selectAll("g.link").data(@dataFn())
     join.exit().remove()
@@ -297,20 +305,20 @@ class OtherLinksPresenter
     it.append("foreignObject").attr("class", "linknode")
       .append("xhtml:body").append("p")
     
-linksPresenter = new OtherLinksPresenter otherLinks
+linksPresenter = new OtherLinksPresenter svg, calculators, otherLinks
 
 class SelfLinksPresenter
-  constructor: (@dataFn) ->
+  constructor: (@svg, @calculators, @dataFn) ->
   tick: ->
-    join = svg.selectAll("g.selflink").data(@dataFn())
+    join = @svg.selectAll("g.selflink").data(@dataFn())
     join.selectAll(".linknode")
-      .attr("x", (d) -> outside(d.source).x - nodeWidth/2)
-      .attr("y", (d) -> outside(d.source).y - nodeHeight(d.linknode)/2)
+      .attr("x", (d) => @calculators.outside(d.source).x - @calculators.nodeWidth/2)
+      .attr("y", (d) => @calculators.outside(d.source).y - @calculators.nodeHeight(d.linknode)/2)
       .attr("width", nodeWidth)
-      .attr("height", (d) -> nodeHeight(d.linknode))
+      .attr("height", (d) => @calculators.nodeHeight(d.linknode))
       .selectAll("p")
         .text((d) -> d.linknode?.text)
-        .style "color", (d) -> nodeColor(d.linknode)
+        .style "color", (d) => @calculators.nodeColor(d.linknode)
     join.selectAll("path")
       .attr("d", computeSelfLinkPath)
       .style("fill", "none")
@@ -322,7 +330,7 @@ class SelfLinksPresenter
     it.append("foreignObject").attr("class", "linknode")
       .append("xhtml:body").append("p")
     
-selflinksPresenter = new SelfLinksPresenter selfLinks
+selflinksPresenter = new SelfLinksPresenter svg, calculators, selfLinks
 
 tick = ->
   linksPresenter.tick()
