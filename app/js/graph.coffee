@@ -84,6 +84,31 @@ otherLinks = -> partitionedLinks()[1]
 
 selfLinks = -> partitionedLinks()[0]
 
+createPointNode = (text) ->
+  pointnode =
+    type: "pointnode"
+    text: text
+  nodes.push(pointnode)
+  pointnode
+
+createLinkNode = (link, calculators) ->
+  linknode =
+    type: "linknode"
+    text: ""
+    x: calculators.midpoint(link).x
+    y: calculators.midpoint(link).y
+  nodes.push(linknode)
+  linknode
+
+createLink = (source, target, linknode) ->
+  link = 
+    source: source
+    target: target
+    linknode: linknode
+  links.push(link)
+  link
+
+
 @saveGraph = ->
   localStorage.nodes = JSON.stringify(nodes)
   cleanLinks = links.map (orig) ->
@@ -104,20 +129,6 @@ class KeyboardFsm
     @state()
     restart()
   focus: -> @el.focus()
-  createPointNode: (text) ->
-    pointnode =
-      type: "pointnode"
-      text: text
-    nodes.push(pointnode)
-    pointnode
-  createLinkNode: (link) ->
-    linknode =
-      type: "linknode"
-      text: ""
-      x: midpoint(link).x
-      y: midpoint(link).y
-    nodes.push(linknode)
-    linknode
   idling: ->
     switch @keyCode
       when ESC
@@ -126,9 +137,9 @@ class KeyboardFsm
       else
         if /\w/.test @key
           @state = @createAndBeginLabeling
-        @state()
+          @state()
   createAndBeginLabeling: ->
-    @nodeToLabel = @createPointNode @el.value
+    @nodeToLabel = createPointNode @el.value
     @state = @labeling
   labeling: ->
     switch @keyCode
@@ -178,11 +189,7 @@ class KeyboardFsm
     if @target is undefined
       @target = @source
     @targetIndex = @target.index
-    @currentLink =
-      source: @source
-      target: @target
-      linknode: null
-    links.push(@currentLink)
+    @currentLink = createLink(@source, @target, null)
     @cancelFn = ->
       links.pop()
       @cancelFn = -> null
@@ -212,7 +219,7 @@ class KeyboardFsm
     @state()
   beginLabelingLink: ->
     @el.value = ""
-    linknode = @createLinkNode(@currentLink)
+    linknode = createLinkNode(@currentLink, calculators)
     @currentLink.linknode = linknode
     @state = @labelingLink
   labelingLink: ->
@@ -236,7 +243,14 @@ class KeyboardFsm
 force = d3.layout.force()
   .charge((d) -> Math.min(-50, -1*d.text.length*10))
   .linkDistance((d) ->
-    Math.max(50, d.source.text.length + d.linknode.text.length + d.target.text.length))
+    Math.max(
+      50,
+      _([d.source, d.linknode, d.target]).reduce(
+        (memo, node) -> memo + (if node? then node.text.length else 20),
+        0
+      )
+    )
+  )
   .size([w, h])
   .nodes(nodes)
   .links(links)
