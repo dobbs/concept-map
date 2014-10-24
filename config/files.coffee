@@ -13,7 +13,6 @@ module.exports = (lineman) ->
       vendor: [
         "vendor/js/underscore.js",
         "vendor/js/d3.js",
-        "vendor/js/cola.v3.js"
       ]
     }
   }

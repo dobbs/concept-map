@@ -361,9 +361,9 @@ restart = ->
 
 force.on "tick", tick
 
-d3.select('body').on "click", fsm.focus.bind(fsm)
-fsm.focus()
-restart();
+# d3.select('body').on "click", fsm.focus.bind(fsm)
+# fsm.focus()
+# restart();
 
 @pointnodes = pointnodes
 @linknodes = linknodes
