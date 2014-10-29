@@ -1,18 +1,20 @@
 describe "Node", ->
   describe "constructor", ->
-    When -> @node = new Node("one fish")
-    Then -> expect(@node.text).toEqual "one fish"
-    Then -> expect(@node.x).toBeUndefined()
-    Then -> expect(@node.y).toBeUndefined()
+    [node] = []
+    When -> node = new Node("one fish")
+    Then -> expect(node.text).toEqual "one fish"
+    Then -> expect(node.x).toBeUndefined()
+    Then -> expect(node.y).toBeUndefined()
 
   describe "play nicely with d3.layout.force", ->
+    [nodeA, nodeB] = []
     When ->
-      @nodes = [new Node("two fish"), new Node("red fish")]
+      [nodeA, nodeB] = [new Node("two fish"), new Node("red fish")]
       force = d3.layout.force()
         .size([100, 100])
-        .nodes(@nodes)
+        .nodes([nodeA, nodeB])
         .links([])
         .start()
     Then ->
-      expect(_.every(_.flatten(_.map(@nodes, (n) -> [n.x, n.y])), _.isNumber))
+      expect(_.every([nodeA.x, nodeA.y, nodeB.x, nodeB.y], _.isNumber))
         .toBeTruthy()
