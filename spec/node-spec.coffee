@@ -18,3 +18,10 @@ describe "Node", ->
     Then ->
       expect(_.every([nodeA.x, nodeA.y, nodeB.x, nodeB.y], _.isNumber))
         .toBeTruthy()
+
+    describe "position uses keys from the d3 force layout", ->
+      Then -> expect(nodeA.position().x).toEqual(nodeA.x)
+      Then -> expect(nodeA.position().y).toEqual(nodeA.y)
+      Then -> expect(nodeB.position().x).toEqual(nodeB.x)
+      Then -> expect(nodeB.position().y).toEqual(nodeB.y)
+        
