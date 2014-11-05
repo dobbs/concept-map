@@ -8,13 +8,13 @@ describe "Circular Links", ->
   describe "isCircular()", ->
     Then -> expect(link.isCircular()).toBeTruthy()
    
-  describe "midpoint(center)", ->
+  describe "midpoint()", ->
     [midpoint, center] = []
     Given ->
       [sx, sy] = _.sample(_.range(10, 100, 5), 2)
       source.position = -> new Position(sx, sy)
-      center = new Position(50, 50)
-      midpoint = link.midpoint(center)
+      center = Geom.graphCenter()
+      midpoint = link.midpoint()
 
     describe "center, midpoint and source must be colinear", ->
       Then ->
