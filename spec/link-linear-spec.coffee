@@ -8,7 +8,7 @@ describe "Linear Links", ->
   describe "constructor", ->
     Then -> expect(link.source).toEqual source
     Then -> expect(link.target).toEqual target
-    Then -> expect(link.annotation).toEqual "annotation"
+    Then -> expect(link.text).toEqual "annotation"
         
   describe "isCircular()", ->
     Then -> expect(link.isCircular()).toBeFalsy()

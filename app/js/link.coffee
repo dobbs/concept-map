@@ -1,5 +1,5 @@
 class Link
-  constructor: (@source, @target, @annotation) ->
+  constructor: (@source, @target, @text='') ->
   isCircular: -> @source is @target
   midpoint: ->
     if @isCircular()
@@ -8,8 +8,9 @@ class Link
       new Position(p.x + @distance()*unitx, p.y + @distance()*unity)
     else
       [s, t] = [@source.position(), @target.position()]
-      new Position(t.x + (s.x - t.x) / 2, t.y + (s.y - t.y) / 2)
+      new Position((s.x + t.x)/2, (s.y + t.y)/2)
+  distance: ->
+    Math.max(50, @source.text.length + @target.text.length + @text.length)
   position: -> @midpoint()
-    
 
 @Link = Link
