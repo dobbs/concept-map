@@ -4,22 +4,24 @@ describe "Graph", ->
   Given -> graph = new Graph()
 
   describe "empty", ->
-    Then -> expect(graph.nodes).toEqual []
-    Then -> expect(graph.links).toEqual []
+    Then -> expect(graph.nodes()).toEqual []
+    Then -> expect(graph.links()).toEqual []
 
   describe "add(node)", ->
     When -> graph.add(new Node('one fish'))
-    Then -> expect(graph.nodes.length).toEqual 1
-    Then -> expect(graph.nodes[0].text).toEqual 'one fish'
-    Then -> expect(graph.nodes[0].index).toEqual 0
+    Then -> expect(graph.nodes().length).toEqual 1
+    Then -> expect(graph.nodes()[0].text).toEqual 'one fish'
+    Then -> expect(graph.all.length).toEqual 1
 
-  describe "link(sourceIndex, targetIndex, text)", ->
-    [source, target] = []
+  describe "add(link)", ->
+    [nodeA, nodeB, link] = []
     Given ->
-      source = new Node('fox in sox')
-      target = new Node('knox in box')
-      graph.add(source)
-      graph.add(target)
-    When -> graph.link(0, 1, 'rhymes with')
-    Then -> expect(graph.links.length).toEqual 1
-    
+      nodeA = new Node("bricks and blocks")
+      nodeB = new Node("chicks and clocks")
+      graph.add(nodeB)
+      link = new Link(nodeA, nodeB, "tongue numb")
+    When -> graph.add(link)
+    Then -> expect(graph.links().length).toEqual 1
+    Then -> expect(graph.nodes().length).toEqual 2
+    Then -> expect(graph.all.length).toEqual 3
+    Then -> expect(graph.all).toEqual [nodeB, nodeA, link]

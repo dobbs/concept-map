@@ -1,12 +1,15 @@
 class Graph
-  constructor: (@nodes=[], @links=[]) ->
-  add: (node) ->
-    node.index = @nodes.length
-    @nodes.push(node)
-  link: (sourceIndex, targetIndex, text='') ->
-    source = @nodes[sourceIndex]
-    target = @nodes[targetIndex]
-    link = new Link(source, target, text)
-    @links.push(link)
-    
+  constructor: (@all=[]) ->
+    @seen = {}
+  add: (item) ->
+    if @seen[item.unique_identifier]?
+      return
+    if item instanceof Link
+      @add(item.source)
+      @add(item.target)
+    @seen[item.unique_identifier] = true
+    @all.push(item)
+  nodes: -> _.filter(@all, (item) => item instanceof Node)
+  links: -> _.filter(@all, (item) => item instanceof Link)
+
 @Graph = Graph

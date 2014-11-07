@@ -1,5 +1,5 @@
-class Link
-  constructor: (@source, @target, @text='') ->
+class Link extends Identifiable
+  constructor: (@source, @target, @text='') -> super
   isCircular: -> @source is @target
   midpoint: ->
     if @isCircular()
