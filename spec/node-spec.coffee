@@ -1,7 +1,7 @@
 describe "Node", ->
-  describe "constructor", ->
+  describe "createNode", ->
     [node] = []
-    When -> node = new Node("one fish")
+    When -> node = createNode("one fish")
     Then -> expect(node.text).toEqual "one fish"
     Then -> expect(node.x).toBeUndefined()
     Then -> expect(node.y).toBeUndefined()
@@ -9,7 +9,7 @@ describe "Node", ->
   describe "play nicely with d3.layout.force", ->
     [nodeA, nodeB] = []
     When ->
-      [nodeA, nodeB] = [new Node("two fish"), new Node("red fish")]
+      [nodeA, nodeB] = [createNode("two fish"), createNode("red fish")]
       force = d3.layout.force()
         .size([100, 100])
         .nodes([nodeA, nodeB])

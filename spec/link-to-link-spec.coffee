@@ -2,17 +2,17 @@ describe "Linked Links", ->
   [source, target, link, choices] = []
   Given ->
     choices = _.range(10, 100, 5)
-    source = new Node("source")
-    target = new Node("target")
+    source = createNode("source")
+    target = createNode("target")
     [source.x, source.y, target.x, target.y] = _.sample(choices, 4)
-    link = new Link(source, target, "linked nodes")
+    link = createLink(source, target, "linked nodes")
    
   describe "with a linear link for the source", ->
     [linkAndNode, differentTarget] = []
     Given ->
-      differentTarget = new Node("different target")
+      differentTarget = createNode("different target")
       [differentTarget.x, differentTarget.y] = _.sample(choices, 2)
-      linkAndNode = new Link(link, differentTarget, "link and node")
+      linkAndNode = createLink(link, differentTarget, "link and node")
 
     describe "constructor", ->
       Then -> expect(linkAndNode.source).toEqual link
@@ -24,43 +24,43 @@ describe "Linked Links", ->
       [distanceStoM, distanceMtoT] = []
       Given ->
         midpoint = linkAndNode.midpoint()
-        distanceStoM = Geom.distance(link, midpoint)
-        distanceMtoT = Geom.distance(midpoint, differentTarget)
+        distanceStoM = geom.distance(link, midpoint)
+        distanceMtoT = geom.distance(midpoint, differentTarget)
       Then -> expect(Math.abs(distanceStoM - distanceMtoT)).toBeLessThan 0.0001
 
   describe "with a linear link for the target", ->
     [nodeAndLink, differentSource] = []
     Given ->
-      differentSource = new Node("different source")
+      differentSource = createNode("different source")
       [differentSource.x, differentSource.y] = _.sample(choices, 2)
-      nodeAndLink = new Link(differentSource, link, "node and link")
+      nodeAndLink = createLink(differentSource, link, "node and link")
     describe "midpoint() is equidistant from source node and the target's midpoint", ->
       [distanceStoM, distanceMtoT] = []
       Given ->
         midpoint = nodeAndLink.midpoint()
-        distanceStoM = Geom.distance(differentSource, midpoint)
-        distanceMtoT = Geom.distance(midpoint, link)
+        distanceStoM = geom.distance(differentSource, midpoint)
+        distanceMtoT = geom.distance(midpoint, link)
       Then -> expect(Math.abs(distanceStoM - distanceMtoT)).toBeLessThan 0.0001
 
   describe "with a circular links for source or target", ->
     [expectDistance, circLink, differentSource, differentTarget,
       circLinkAndNode, nodeAndCircLink] = [10]
     Given ->
-      circLink = new Link(target, target, "circular link")
+      circLink = createLink(target, target, "circular link")
       circLink.distance = -> expectDistance
-      differentSource = new Node("different source")
-      differentTarget = new Node("different target")
+      differentSource = createNode("different source")
+      differentTarget = createNode("different target")
       [differentSource.x, differentSource.y, differentTarget.x, differentTarget.y] =
         _.sample(choices, 4)
-      circLinkAndNode = new Link(circLink, differentTarget, "circular link and node")
-      nodeAndCircLink = new Link(differentSource, circLink, "node and circular link")
+      circLinkAndNode = createLink(circLink, differentTarget, "circular link and node")
+      nodeAndCircLink = createLink(differentSource, circLink, "node and circular link")
 
     describe "midpoint() of circular link and node", ->
       [distanceStoM, distanceMtoT] = []
       Given ->
         midpoint = circLinkAndNode.midpoint()
-        distanceStoM = Geom.distance(circLink, midpoint)
-        distanceMtoT = Geom.distance(midpoint, differentTarget)
+        distanceStoM = geom.distance(circLink, midpoint)
+        distanceMtoT = geom.distance(midpoint, differentTarget)
         window.debug =
           circLink: circLink
           circLinkAndNode: circLinkAndNode
@@ -74,7 +74,7 @@ describe "Linked Links", ->
       [distanceStoM, distanceMtoT] = []
       Given ->
         midpoint = nodeAndCircLink.midpoint()
-        distanceStoM = Geom.distance(differentSource, midpoint)
-        distanceMtoT = Geom.distance(midpoint, circLink)
+        distanceStoM = geom.distance(differentSource, midpoint)
+        distanceMtoT = geom.distance(midpoint, circLink)
       Then -> expect(Math.abs(distanceStoM - distanceMtoT)).toBeLessThan 0.0001
       

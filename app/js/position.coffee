@@ -1,5 +1,8 @@
-class Position
-  constructor: (@x, @y) ->
+positionPrototype = 
   position: -> @
 
-@Position = Position
+@createPosition = (x, y) ->
+  position = Object.create positionPrototype
+  _.extend position,
+    x: x
+    y: y
