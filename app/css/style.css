@@ -3,12 +3,13 @@
   border: 1px solid #dedede;
 }
 
-#graph, #panels {
+#main, #sidebar {
   display: inline-block;
   vertical-align: top;
 }
-#graph { width: 410px; }
-#panels { width: 200px; }
+
+#main { width: 410px; }
+#sidebar { width: 280px; }
 .panel label {
   display: inline-block;
   width: 14ex;

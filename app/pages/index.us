@@ -6,6 +6,32 @@
     <link rel="stylesheet" type="text/css" href="<%= css %>" media="all" />
   </head>
   <body>
+    <div id="main">
+      <svg data-id="svg" width="400" height="400"></svg>
+    </div>
+    <div id="sidebar">
+      <form>
+        <div>
+          <input data-id="listener" type="text" size="40" />
+        </div>
+        <div id="panels">
+          <div data-id="link" class="panel link">
+            <div><label>uuid</label><span data-id="uuid"></span></div>
+            <div><label>source</label><span data-id="source"></span></div>
+            <div><label>target</label><span data-id="target"></span></div>
+            <div><label>text</label><input type="text" data-id="text" /></div>
+            <div><label>link distance</label><input type="text" data-id="link-distance" /></div>
+          </div>
+          <div data-id="node" class="panel node">
+            <div><label>uuid</label><span data-id="uuid"></span></div>
+            <div><label>text</label><input type="text" data-id="text" /></div>
+            <div><label>charge</label><input type="text" data-id="charge" /></div>
+            <div><label>x</label><input type="text" data-id="x" /></div>
+            <div><label>y</label><input type="text" data-id="y" /></div>
+          </div>
+        </div>
+      </form>
+    </div>
     <script type="text/javascript" src="<%= js %>"></script>
   </body>
 </html>
