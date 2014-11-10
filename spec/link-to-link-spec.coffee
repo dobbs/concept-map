@@ -1,18 +1,28 @@
 describe "Linked Links", ->
+  # These tests verify the geometry of creating links between the
+  # annotations of other links.  Originally I was going to let
+  # createLink() use other links directly.  I've decided the model is
+  # cleaner if I use nodes to hold the annotations and let links be
+  # created to those nodes.
+  createPositionedLink = (source, target) ->
+    link = createLink(source, target)
+    link.position = link.midpoint
+    link
   [source, target, link, choices] = []
   Given ->
     choices = _.range(10, 100, 5)
     source = createNode("source")
     target = createNode("target")
     [source.x, source.y, target.x, target.y] = _.sample(choices, 4)
-    link = createLink(source, target, "linked nodes")
+    link = createPositionedLink(source, target)
    
   describe "with a linear link for the source", ->
     [linkAndNode, differentTarget] = []
     Given ->
       differentTarget = createNode("different target")
       [differentTarget.x, differentTarget.y] = _.sample(choices, 2)
-      linkAndNode = createLink(link, differentTarget, "link and node")
+      linkAndNode = createPositionedLink(link, differentTarget)
+      linkAndNode.position = linkAndNode.midpoint
 
     describe "constructor", ->
       Then -> expect(linkAndNode.source).toEqual link
@@ -33,7 +43,8 @@ describe "Linked Links", ->
     Given ->
       differentSource = createNode("different source")
       [differentSource.x, differentSource.y] = _.sample(choices, 2)
-      nodeAndLink = createLink(differentSource, link, "node and link")
+      nodeAndLink = createPositionedLink(differentSource, link)
+      nodeAndLink.position = nodeAndLink.midpoint
     describe "midpoint() is equidistant from source node and the target's midpoint", ->
       [distanceStoM, distanceMtoT] = []
       Given ->
@@ -46,14 +57,14 @@ describe "Linked Links", ->
     [expectDistance, circLink, differentSource, differentTarget,
       circLinkAndNode, nodeAndCircLink] = [10]
     Given ->
-      circLink = createLink(target, target, "circular link")
+      circLink = createPositionedLink(target, target)
       circLink.distance = -> expectDistance
       differentSource = createNode("different source")
       differentTarget = createNode("different target")
       [differentSource.x, differentSource.y, differentTarget.x, differentTarget.y] =
         _.sample(choices, 4)
-      circLinkAndNode = createLink(circLink, differentTarget, "circular link and node")
-      nodeAndCircLink = createLink(differentSource, circLink, "node and circular link")
+      circLinkAndNode = createPositionedLink(circLink, differentTarget)
+      nodeAndCircLink = createPositionedLink(differentSource, circLink)
 
     describe "midpoint() of circular link and node", ->
       [distanceStoM, distanceMtoT] = []

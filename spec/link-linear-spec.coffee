@@ -3,12 +3,11 @@ describe "Linear Links", ->
   Given ->
     source = createNode("source")
     target = createNode("target")
-    link = createLink(source, target, "annotation")
+    link = createLink(source, target)
 
   describe "constructor", ->
     Then -> expect(link.source).toEqual source
     Then -> expect(link.target).toEqual target
-    Then -> expect(link.text).toEqual "annotation"
         
   describe "isCircular()", ->
     Then -> expect(link.isCircular()).toBeFalsy()

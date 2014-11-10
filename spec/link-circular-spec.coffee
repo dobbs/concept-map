@@ -2,7 +2,7 @@ describe "Circular Links", ->
   [expectDistance, source, target, link] = [10]
   Given ->
     source = createNode("source")
-    link = createLink(source, source, "annotation")
+    link = createLink(source, source)
     link.distance = -> expectDistance
 
   describe "isCircular()", ->

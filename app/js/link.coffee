@@ -8,9 +8,7 @@ linkPrototype =
     else
       [s, t] = [@source.position(), @target.position()]
       createPosition((s.x + t.x)/2, (s.y + t.y)/2)
-  distance: ->
-    Math.max(50, @source.text.length + @target.text.length + @text.length)
-  position: -> @midpoint()
+  distance: -> Math.max(50, @source.text.length + @target.text.length)
 
 @createLink = (source, target, text='') ->
   link = Object.create linkPrototype
@@ -18,5 +16,4 @@ linkPrototype =
   _.extend link,  
     source: source
     target: target
-    text: text
 
