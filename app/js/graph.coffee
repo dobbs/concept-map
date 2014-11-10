@@ -7,11 +7,15 @@ graphPrototype =
       @add(item.target)
     @seen[item.uuid()] = true
     @all.push(item)
-  nodes: -> _.filter(@all, (item) => !item.midpoint?)
-  links: -> _.filter(@all, (item) => item.midpoint?)
+    @signal.changed("add", item)
+    @
+  onChange: (listener) -> @signal.on "changed", listener
+  nodes: -> _(@all).filter (item) => !item.midpoint?
+  links: -> _(@all).filter (item) => item.midpoint?
 
 @createGraph = ->
   graph = Object.create(graphPrototype)
   _.extend graph,
     seen: {}
     all: []
+    signal: d3.dispatch("changed")
