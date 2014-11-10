@@ -1,4 +1,4 @@
-linkPrototype =
+linkMethods =
   isCircular: -> @source is @target
   midpoint: ->
     if @isCircular()
@@ -8,12 +8,11 @@ linkPrototype =
     else
       [s, t] = [@source.position(), @target.position()]
       createPosition((s.x + t.x)/2, (s.y + t.y)/2)
-  distance: -> Math.max(50, @source.text.length + @target.text.length)
-
+  extraDistance: -> 0
+  distance: -> Math.max(50, @source.text.length + @target.text.length + @extraDistance())
+  
 @createLink = (source, target, text='') ->
-  link = Object.create linkPrototype
-  identifiable link
-  _.extend link,  
+  _.extend identifiable(Object.create linkMethods),  
     source: source
     target: target
 
