@@ -19,7 +19,7 @@ describe "Graph", ->
       nodeA = createNode("bricks and blocks")
       nodeB = createNode("chicks and clocks")
       graph.add(nodeB)
-      link = createLink(nodeA, nodeB, "tongue numb")
+      link = createLink(nodeA, nodeB)
     When -> graph.add(link)
     Then -> expect(graph.links().length).toEqual 1
     Then -> expect(graph.nodes().length).toEqual 2
