@@ -8,6 +8,7 @@ graphPresenterMethods =
 @graphPresenter = (svg, graph) ->
   w = svg.node().attributes.width.value
   h = svg.node().attributes.height.value
+  geom.graphCenter = -> createPosition(parseInt(w/2), parseInt(h/2))
   force = d3.layout.force()
     .charge((node) -> node.charge())
     .linkDistance((link) -> link.distance())
