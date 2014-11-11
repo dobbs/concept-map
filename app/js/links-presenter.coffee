@@ -21,6 +21,4 @@ linksPresenterMethods =
 
 @linksPresenter = (svg, graph) ->
   _.extend Object.create(linksPresenterMethods),
-    svg: svg
-    graph: graph
     d3dataJoin: -> svg.selectAll('[data-id=link]').data(graph.links())

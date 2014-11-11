@@ -14,6 +14,5 @@ graphPresenterMethods =
     .linkDistance((link) -> link.distance())
     .size([w, h])
   _.extend Object.create(graphPresenterMethods),
-    svg: svg
     graph: graph
     force: force

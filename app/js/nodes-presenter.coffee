@@ -20,6 +20,4 @@ nodesPresenterMethods =
 
 @nodesPresenter = (svg, graph) ->
   _.extend Object.create(nodesPresenterMethods), 
-    svg: svg
-    graph: graph
     d3dataJoin: -> svg.selectAll('[data-id=node]').data(graph.nodes())
