@@ -1,8 +1,7 @@
-positionPrototype = 
+positionMethods = 
   position: -> @
 
 @createPosition = (x, y) ->
-  position = Object.create positionPrototype
-  _.extend position,
+  _.extend Object.create(positionMethods),
     x: x
     y: y

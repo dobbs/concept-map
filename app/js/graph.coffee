@@ -1,22 +1,20 @@
-graphPrototype =
+graphMethods =
   add: (item) ->
-    if @seen[item.uuid()]?
-      return
+    return if @seen[item.uuid()]?
+    @seen[item.uuid()] = true
     if item.midpoint?
       @add(item.source)
       @add(item.target)
       @add(item.annotation) if item.annotation?
-    @seen[item.uuid()] = true
     @all.push(item)
     @signal.changed("add", item)
     @
   onChange: (listener) -> @signal.on "changed", listener
-  nodes: -> _(@all).filter (item) => !item.midpoint?
-  links: -> _(@all).filter (item) => item.midpoint?
+  nodes: -> _(@all).filter (item) -> !item.midpoint?
+  links: -> _(@all).filter (item) -> item.midpoint?
 
 @createGraph = ->
-  graph = Object.create(graphPrototype)
-  _.extend graph,
+  _.extend Object.create(graphMethods),
     seen: {}
     all: []
     signal: d3.dispatch("changed")
