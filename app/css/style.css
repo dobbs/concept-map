@@ -20,11 +20,11 @@ svg {
   border: 1px solid #369;
 }
 
-.link, .selflink {
+path {
   stroke: #999;
 }
 
-.pointnode p, .linknode p {
+p {
   margin: 0;
   text-align: center;
 }
