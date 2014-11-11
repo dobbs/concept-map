@@ -5,6 +5,7 @@ graphPrototype =
     if item.midpoint?
       @add(item.source)
       @add(item.target)
+      @add(item.annotation) if item.annotation?
     @seen[item.uuid()] = true
     @all.push(item)
     @signal.changed("add", item)
