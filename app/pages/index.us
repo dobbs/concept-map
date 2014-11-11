@@ -11,23 +11,21 @@
     </div>
     <div id="sidebar">
       <form>
-        <div>
-          <input data-id="listener" type="text" size="40" />
-        </div>
         <div id="panels">
-          <div data-id="link" class="panel link">
-            <div><label>uuid</label><span data-id="uuid"></span></div>
-            <div><label>source</label><span data-id="source"></span></div>
-            <div><label>target</label><span data-id="target"></span></div>
-            <div><label>text</label><input type="text" data-id="text" /></div>
-            <div><label>link distance</label><input type="text" data-id="link-distance" /></div>
-          </div>
-          <div data-id="node" class="panel node">
-            <div><label>uuid</label><span data-id="uuid"></span></div>
-            <div><label>text</label><input type="text" data-id="text" /></div>
+          <div data-id="node-editor" class="panel node">
+            <div><label>text</label><input type="text" data-id="text" tabindex="1" /></div>
             <div><label>charge</label><input type="text" data-id="charge" /></div>
             <div><label>x</label><input type="text" data-id="x" /></div>
             <div><label>y</label><input type="text" data-id="y" /></div>
+            <div><label>uuid</label><span data-id="uuid"></span></div>
+          </div>
+
+          <div data-id="link-editor" class="panel link">
+            <div><label>source</label><span data-id="source"></span></div>
+            <div><label>target</label><span data-id="target"></span></div>
+            <div><label>annotation</label><span data-id="target"></span></div>
+            <div><label>link distance</label><input type="text" data-id="link-distance" /></div>
+            <div><label>uuid</label><span data-id="uuid"></span></div>
           </div>
         </div>
       </form>
