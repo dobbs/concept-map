@@ -23,7 +23,7 @@
           <div data-id="link-editor" class="panel link">
             <div><label>source</label><span data-id="source"></span></div>
             <div><label>target</label><span data-id="target"></span></div>
-            <div><label>annotation</label><span data-id="target"></span></div>
+            <div><label>annotation</label><span data-id="annotation"></span></div>
             <div><label>link distance</label><input type="text" data-id="link-distance" /></div>
             <div><label>uuid</label><span data-id="uuid"></span></div>
           </div>
