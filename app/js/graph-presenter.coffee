@@ -13,6 +13,9 @@ graphPresenterMethods =
     .charge((node) -> node.charge())
     .linkDistance((link) -> link.distance())
     .size([w, h])
+  antenna.drag = force.drag()
+    .on "dragstart", (d) -> d3.select(@).classed('fixed', d.fixed=true)
+  antenna.on 'nodeChanged', -> force.resume()
   _.extend Object.create(graphPresenterMethods),
     graph: graph
     force: force

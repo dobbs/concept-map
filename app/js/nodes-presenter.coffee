@@ -3,6 +3,7 @@ nodesPresenterMethods =
     nodes = @d3dataJoin()
     nodes.exit().remove()
     nodes.enter().append("foreignObject").attr('data-id', 'node')
+      .call(antenna.drag)
       .append('xhtml:body')
       .append('p')
     @

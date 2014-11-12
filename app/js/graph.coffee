@@ -7,9 +7,8 @@ graphMethods =
       @add(item.target)
       @add(item.annotation) if item.annotation?
     @all.push(item)
-    @signal.changed("add", item)
+    antenna.graphChanged("add", item)
     @
-  onChange: (listener) -> @signal.on "changed", listener
   nodes: -> _(@all).filter (item) -> !item.midpoint?
   links: -> _(@all).filter (item) -> item.midpoint?
 
@@ -17,4 +16,3 @@ graphMethods =
   _.extend Object.create(graphMethods),
     seen: {}
     all: []
-    signal: d3.dispatch("changed")
