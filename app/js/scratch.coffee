@@ -21,12 +21,16 @@
   link3 = createLink note2, note2, note3
 
   graph.add(link1)
+  ne = nodeEditor(source)
+  ne.updateElementAttributes()
+      
   scratch = 
     svg: svg
     graph: graph
     np: np
     lp: lp
     gp: gp
+    ne: ne
     source: source
     target: target
     note1: note1
