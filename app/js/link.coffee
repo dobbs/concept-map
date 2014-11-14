@@ -9,13 +9,15 @@ linkMethods =
       [s, t] = [@source.position(), @target.position()]
       createPosition((s.x + t.x)/2, (s.y + t.y)/2)
   annotationLength: -> if @annotation? then @annotation.text.length else 0
-  distance: -> Math.max(50, @source.text.length + @target.text.length + @annotationLength())
+  distance: -> @storedDistance ||
+    Math.max(50, @source.text.length + @target.text.length + @annotationLength())
   
 @createLink = (source, target, annotation=undefined) ->
   link = _.extend identifiable(Object.create linkMethods),
     source: source
     target: target
     annotation: annotation
+    storedDistance: undefined
   if annotation?
     annotation.link = link
   link

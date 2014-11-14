@@ -23,7 +23,14 @@
   graph.add(link1)
   ne = nodeEditor(source)
   ne.updateElementAttributes()
-      
+  le = linkEditor(link1)
+  le.updateElementAttributes()
+
+  antenna.on 'linkChanged', ->
+    antenna.graphChanged("linkChanged", arguments...)
+  antenna.on 'nodeChanged', ->
+    antenna.graphChanged("nodeChanged", arguments...)
+
   scratch = 
     svg: svg
     graph: graph
@@ -31,6 +38,7 @@
     lp: lp
     gp: gp
     ne: ne
+    le: le
     source: source
     target: target
     note1: note1
