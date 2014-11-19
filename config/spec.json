@@ -1,6 +1,6 @@
 {
   "framework" : "jasmine",
-  "launch_in_dev" : ["Chrome", "PhantomJS"],
+  "launch_in_dev" : ["Chrome", "PhantomJS", "Firefox"],
   "launch_in_ci" : ["PhantomJS"],
   "src_files" : [
     "generated/js/app.js",

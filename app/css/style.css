@@ -20,11 +20,15 @@ svg {
   border: 1px solid #369;
 }
 
-path {
+svg path {
   stroke: #999;
 }
 
-p {
+svg body {
+  margin: 0;
+}
+
+svg p {
   margin: 0;
   text-align: center;
 }
