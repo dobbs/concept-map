@@ -1,9 +1,14 @@
 {
-  "name": "graph-spike",
-  "description": "An HTML/JS/CSS app",
+  "name": "concept-map",
+  "description": "A in-browser tool for sketching concept maps",
   "version": "0.0.1",
   "private": true,
-  "author": "John Doe",
+  "homepage": "http://github.com/dobbs/concept-map",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Eric Dobbs",
+    "url": "http://dobbse.net"
+  },
   "devDependencies": {
     "lineman": "~0.33.4"
   },
