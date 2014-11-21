@@ -12,8 +12,11 @@
     <div id="sidebar">
       <form>
         <div id="panels">
+          <div class="panel">
+            <input type="text" size="37" />
+          </div>
           <div data-id="node-editor" class="panel node">
-            <div><label>text</label><input type="text" data-id="text" tabindex="1" /></div>
+            <div><label>text</label><input type="text" data-id="text" /></div>
             <div><label>charge</label><input type="text" data-id="charge" /></div>
             <div><label>x</label><input type="text" data-id="x" /></div>
             <div><label>y</label><input type="text" data-id="y" /></div>

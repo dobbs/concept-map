@@ -25,12 +25,15 @@
   ne.updateElementAttributes()
   le = linkEditor(link1)
   le.updateElementAttributes()
+  listener = d3.select('input[type=text]').node()
+  kba = keyboardActions(listener, graph)
 
   antenna.on 'linkChanged', ->
     antenna.graphChanged("linkChanged", arguments...)
   antenna.on 'nodeChanged', ->
     antenna.graphChanged("nodeChanged", arguments...)
 
+  document.body.addEventListener 'keyup', keyboard
   scratch = 
     svg: svg
     graph: graph
@@ -39,6 +42,7 @@
     gp: gp
     ne: ne
     le: le
+    kba: kba
     source: source
     target: target
     note1: note1
