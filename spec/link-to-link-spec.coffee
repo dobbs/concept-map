@@ -4,6 +4,12 @@ describe "Linked Links", ->
   # createLink() use other links directly.  I've decided the model is
   # cleaner if I use nodes to hold the annotations and let links be
   # created to those nodes.
+  #
+  # The tests, however, still use links (slightly modified) as a source
+  # or target of another link.  What links are really doing is connecting
+  # objects that have a position() method that returns {x:.., y:...}.
+  # In the real code (as of 21 Nov 2014) only nodes now have such a
+  # position method().
   createPositionedLink = (source, target) ->
     link = createLink(source, target)
     link.position = link.midpoint
