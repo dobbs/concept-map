@@ -1,12 +1,15 @@
 nodeEditorMethods =
   updateElementAttributes: -> @fields.attr('value', (d) -> d.get())
   edit: (newNode) ->
+    @that.node.style = undefined if @that.node?
     @that.node = newNode
+    @that.node.style = 'active'
+    antenna.nodeChanged @that.node, 'style', 'active'
     @updateElementAttributes()
 
-@nodeEditor = (theNode) ->
+@nodeEditor = ->
   that =
-    node: theNode
+    node: null
   theData = -> [
     {get: (-> that.node.text)         , set: (value) -> that.node.text = value || ''}
     {get: (-> that.node.charge())     , set: (value) -> that.node.storedCharge = parseInt(value)}
@@ -21,3 +24,5 @@ nodeEditorMethods =
   ne = _.extend Object.create(nodeEditorMethods),
     fields: fields
     that: that
+  antenna.on 'editNode', (node) -> ne.edit(node)
+  ne
