@@ -20,18 +20,17 @@
   note3 = createNode 'WAT?'
   link3 = createLink note2, note2, note3
 
-  graph.add(link1)
-  ne = nodeEditor(source)
-  ne.updateElementAttributes()
-  le = linkEditor(link1)
-  le.updateElementAttributes()
-  listener = d3.select('input[type=text]').node()
-  kba = keyboardActions(listener, graph)
-
   antenna.on 'linkChanged', ->
     antenna.graphChanged("linkChanged", arguments...)
   antenna.on 'nodeChanged', ->
     antenna.graphChanged("nodeChanged", arguments...)
+
+  graph.add(link1)
+  ne = nodeEditor()
+  le = linkEditor(link1)
+  le.updateElementAttributes()
+  listener = d3.select('input[data-id=listener]').node()
+  kba = keyboardActions(listener, graph)
 
   document.body.addEventListener 'keyup', keyboard
   scratch = 

@@ -13,7 +13,8 @@
       <form>
         <div id="panels">
           <div class="panel">
-            <input type="text" size="37" />
+            <input type="text" size="37" disabled="disabled" />
+            <input type="text" size="37" data-id="listener" />
           </div>
           <div data-id="node-editor" class="panel node">
             <div><label>text</label><input type="text" data-id="text" /></div>
