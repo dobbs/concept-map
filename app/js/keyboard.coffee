@@ -46,6 +46,7 @@ labeling.label = 'labeling'
 editNode = (key) ->
   switch
     when key.isReturn()
+      kb.changeTo(createLink).forward null
     when key.isEsc()
       antenna.cancelNode()
       kb.changeTo(ready)
@@ -54,6 +55,38 @@ editNode = (key) ->
     when key.isArrowright() || key.isArrowdown()
       antenna.editNextNode()
 editNode.label = 'editNode'
+
+createLink = (key) ->
+  antenna.createLink()
+  kb.changeTo(linking)
+createLink.label = 'createLink'
+  
+linking = (key) ->
+  switch
+    when key.isReturn()
+      kb.changeTo(labelingLink)
+      antenna.labelLink()
+    when key.isEsc()
+      kb.changeTo(ready)
+      antenna.cancelLink()
+    when key.isArrowleft() || key.isArrowup()
+      antenna.linkNextNode()
+    when key.isArrowright() || key.isArrowdown()
+      antenna.linkPrevNode()
+linking.label = 'linking'  
+
+labelingLink = (key) ->
+  switch
+    when key.isReturn()
+      kb.changeTo(ready)
+      antenna.finishLink()
+    when key.isEsc()
+      kb.changeTo(ready)
+      antenna.cancelLink()
+    when key.isWord()
+      antenna.updateLinkText key
+  
+labelingLink.label = 'labelingLink'
 
 kb.changeTo idle
   

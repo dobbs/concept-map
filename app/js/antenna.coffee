@@ -2,5 +2,5 @@
   'readyForEntry',
   'createNode', 'finishNode', 'updateNodeText',
   'editNode', 'cancelNode', 'editNextNode', 'editPrevNode',
+  'createLink', 'labelLink', 'finishLink', 'cancelLink',
   'log'
-
