@@ -24,9 +24,11 @@ keyboardActionsMethods =
     listener: listener
     node: null
   antenna.on 'readyForEntry', -> obj.listener.focus()
-  antenna.on 'createNode', -> obj.createNode()
-  antenna.on 'finishNode', -> obj.finishNode()
-  antenna.on 'updateNodeText', -> obj.updateNodeText()
-  antenna.on 'editNextNode', -> obj.editNextNode()
-  antenna.on 'editPrevNode', -> obj.editPrevNode()
+  antenna.on(eventName, -> obj[eventName]()) for eventName in [
+    'createNode'
+    'finishNode'
+    'updateNodeText'
+    'editNextNode'
+    'editPrevNode'
+  ]
   obj
