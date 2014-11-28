@@ -46,6 +46,8 @@ labeling.label = 'labeling'
 editNode = (key) ->
   switch
     when key.isReturn()
+    when key.isEsc()
+      antenna.cancelNode()
       kb.changeTo(ready)
     when key.isArrowleft() || key.isArrowup()
       antenna.editPrevNode()

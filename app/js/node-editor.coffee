@@ -1,11 +1,14 @@
 nodeEditorMethods =
   updateElementAttributes: -> @fields.attr('value', (d) -> d.get())
   edit: (newNode) ->
-    @that.node.style = undefined if @that.node?
+    @cancel()
     @that.node = newNode
     @that.node.style = 'active'
     antenna.nodeChanged @that.node, 'style', 'active'
     @updateElementAttributes()
+  cancel: ->
+    @that.node.style = undefined if @that.node?
+    @that.node = null
 
 @nodeEditor = ->
   that =
@@ -25,4 +28,5 @@ nodeEditorMethods =
     fields: fields
     that: that
   antenna.on 'editNode', (node) -> ne.edit(node)
+  antenna.on 'cancelNode', -> ne.cancel()
   ne
