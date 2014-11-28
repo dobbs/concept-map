@@ -8,6 +8,7 @@
   <body>
     <div id="main">
       <svg data-id="svg" width="400" height="400"></svg>
+      <div data-id="log"></div>
     </div>
     <div id="sidebar">
       <form>

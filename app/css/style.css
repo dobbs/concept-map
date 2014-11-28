@@ -36,3 +36,12 @@ svg p {
 svg p.active {
   color: red;
 }
+
+#main div {
+  height: 120px;
+  overflow: scroll;
+}
+
+#main div p {
+  margin: 0;
+}
