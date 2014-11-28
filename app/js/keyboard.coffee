@@ -1,17 +1,22 @@
 keyboardMethods =
   keyup: (event) -> @state(createKey event)
-  changeTo: (fn) -> @state = fn; @
+  changeTo: (fn) ->
+    antenna.log "entering '#{fn.label}' state"
+    @state = fn; @
   forward: (key) -> @state(key)
 kb = _.extend Object.create(keyboardMethods),
   state: null
 
 idle = (key, code) -> kb.changeTo(firstalt) if key.isAlt()
+idle.label = 'idle'
+
 firstalt = (key, code) ->
   if key.isAlt()
     kb.changeTo(ready)
     antenna.readyForEntry()
   else
     kb.changeTo(idle)
+firstalt.label = 'firstalt'
 
 ready = (key) ->
   switch
@@ -19,10 +24,12 @@ ready = (key) ->
       kb.changeTo(createForLabeling).forward key
     when key.isArrow()
       kb.changeTo(editNode).forward key
+ready.label = 'ready'
 
 createForLabeling = (key) ->
   antenna.createNode()
   kb.changeTo(labeling).forward key
+createForLabeling.label = 'createForLabeling'
 
 labeling = (key) ->
   switch 
@@ -34,6 +41,7 @@ labeling = (key) ->
       antenna.finishNode()
     when key.isWord()
       antenna.updateNodeText key
+labeling.label = 'labeling'
 
 editNode = (key) ->
   switch
@@ -43,6 +51,7 @@ editNode = (key) ->
       antenna.editPrevNode()
     when key.isArrowright() || key.isArrowdown()
       antenna.editNextNode()
+editNode.label = 'editNode'
 
 kb.changeTo idle
   
