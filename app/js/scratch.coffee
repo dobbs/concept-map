@@ -50,3 +50,5 @@
     link2: link2
     note3: note3
     link3: link3
+
+@x = @scratch()
