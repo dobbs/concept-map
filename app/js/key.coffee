@@ -4,6 +4,7 @@ keyMethods =
     !_.any([
         @isAlt
         @isReturn
+        @isTab
         @isArrowleft
         @isArrowup
         @isArrowright
@@ -15,6 +16,7 @@ keyMethods =
       ], (fn) -> fn.call(that))
   isAlt: -> @keyCode is 18
   isReturn: -> @keyCode is 13
+  isTab: -> @keyCode is 9
   isArrow: ->
     that = @
     _.any([
