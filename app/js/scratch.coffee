@@ -1,5 +1,6 @@
 @scratch = ->
   svg = d3.select '[data-id=svg]'
+  return 'Must identify the SVG DOM root with data-id="svg".' unless svg.node()?
   graph = createGraph()
   np = nodesPresenter svg, graph
   lp = linksPresenter svg, graph
