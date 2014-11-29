@@ -24,11 +24,7 @@ keyboardActionsMethods =
     listener: listener
     node: null
   antenna.on 'readyForEntry', -> obj.listener.focus()
-  antenna.on(eventName, -> obj[eventName]()) for eventName in [
-    'createNode'
-    'finishNode'
-    'updateNodeText'
-    'editNextNode'
-    'editPrevNode'
-  ]
+  for eventName, value of obj when _.isFunction(value)
+    do (eventName, value) -> 
+      antenna.on eventName, -> obj[eventName]()
   obj
