@@ -9,6 +9,11 @@
     np.updateDomElements()
     lp.updateDomElements()
     gp.startLayoutAnimation()
+  antenna.on 'linkChanged', ->
+    antenna.graphChanged("linkChanged", arguments...)
+  antenna.on 'nodeChanged', ->
+    antenna.graphChanged("nodeChanged", arguments...)
+
   gp.force.on "tick", ->
     np.updateDomElementAttributes()
     lp.updateDomElementAttributes()
@@ -20,11 +25,6 @@
   link2 = createLink source, source, note2
   note3 = createNode 'WAT?'
   link3 = createLink note2, note2, note3
-
-  antenna.on 'linkChanged', ->
-    antenna.graphChanged("linkChanged", arguments...)
-  antenna.on 'nodeChanged', ->
-    antenna.graphChanged("nodeChanged", arguments...)
 
   graph.add(link1)
   ne = nodeEditor()
