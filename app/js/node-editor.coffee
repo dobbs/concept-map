@@ -28,5 +28,8 @@ nodeEditorMethods =
     fields: fields
     that: that
   antenna.on 'editNode', (node) -> ne.edit(node)
-  antenna.on 'cancelNode', -> ne.cancel()
+  antenna.on 'cancelNode', ->
+    node = ne.that.node
+    ne.cancel()
+    antenna.nodeChanged node
   ne
