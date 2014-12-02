@@ -86,8 +86,7 @@ labelingLink = (key) ->
       kb.changeTo(ready)
       antenna.cancelLink()
     when key.isWord()
-      antenna.updateLinkText key
-  
+      antenna.labelLink key
 labelingLink.label = 'labelingLink'
 
 kb.changeTo idle

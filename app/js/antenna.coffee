@@ -14,5 +14,7 @@
   'labelLink'
   'finishLink'
   'cancelLink'
+  'linkNextNode'
+  'linkPrevNode'
   'log'
 )

@@ -21,11 +21,28 @@ keyboardActionsMethods =
     @annotation = createNode()
     @link = createLink(@node, @node, @annotation)
     @graph.add @link
+  linkNextNode: ->
+    target = @link.target
+    nodes = @graph.nodes()
+    @link.target = nodes[((if target? then target.index else 0) + 1) % nodes.length]
+    antenna.linkChanged 'targetChaged', @link
+  linkPrevNode: ->
+    target = @link.target
+    nodes = @graph.nodes()
+    index = (nodes.length + (if target? then target.index else nodes.length) - 1) % nodes.length
+    @link.target = nodes[index]
+    antenna.linkChanged 'targetChaged', @link
+  labelLink: ->
+    @annotation.text = @listener.value
+    antenna.nodeChanged 'updateNodeText', @annotation
   cancelLink: ->
     @graph.remove @link
     @finishLink()
   finishLink: ->
     antenna.cancelNode()
+    @listener.value = ''
+    @annotation = null
+    @link = null
 
 @keyboardActions = (listener, graph) ->
   obj = _.extend Object.create(keyboardActionsMethods),
