@@ -41,6 +41,9 @@ svg p.active {
   height: 350px;
   overflow: scroll;
 }
+#main #log {
+  height: 300px;
+}
 
 #main div p {
   margin: 0;
