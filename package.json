@@ -10,7 +10,7 @@
     "url": "http://dobbse.net"
   },
   "devDependencies": {
-    "lineman": "~0.33.4"
+    "lineman": "^0.37.0"
   },
   "scripts": {
     "start": "lineman run",

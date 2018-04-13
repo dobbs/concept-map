@@ -1,0 +1,15 @@
+version: '2.2'
+
+services:
+  node:
+    image: node:8
+    volumes:
+      - '.:/concept-map'
+    working_dir: /concept-map
+    command: node /concept-map/node_modules/lineman/cli.js build
+  web:
+    extends: node
+    ports:
+      - 8000:8000
+      - 35729:35729
+    command: node /concept-map/node_modules/lineman/cli.js run
